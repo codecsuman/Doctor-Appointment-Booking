@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useState, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { AppContext } from "../context/AppContext";
 import { assets } from "../assets/assets";
@@ -25,9 +25,6 @@ const Appointment = () => {
     const [slotIndex, setSlotIndex] = useState(0);
     const [slotTime, setSlotTime] = useState("");
 
-    // -----------------------------
-    // LOAD DOCTOR DETAILS (Logic unchanged)
-    // -----------------------------
     useEffect(() => {
         if (doctors.length > 0) {
             const doctor = doctors.find((doc) => doc._id === docId);
@@ -35,15 +32,11 @@ const Appointment = () => {
         }
     }, [doctors, docId]);
 
-    // -----------------------------
-    // GENERATE TIME SLOTS (Logic unchanged)
-    // -----------------------------
-    const getAvailableSlots = () => {
+    const getAvailableSlots = useCallback(() => {
         if (!docInfo) return;
 
         const booked = docInfo.slots_booked || {};
         const result = [];
-
         const today = new Date();
 
         for (let i = 0; i < 7; i++) {
@@ -53,12 +46,10 @@ const Appointment = () => {
             const end = new Date(current);
             end.setHours(21, 0, 0, 0);
 
-            // Set start time for today (current hour + 1, rounded to nearest half-hour)
             if (i === 0) {
                 current.setHours(Math.max(current.getHours() + 1, 10));
                 current.setMinutes(current.getMinutes() > 30 ? 30 : 0);
             } else {
-                // Set start time for future days
                 current.setHours(10, 0, 0, 0);
             }
 
@@ -83,27 +74,22 @@ const Appointment = () => {
                 current.setMinutes(current.getMinutes() + 30);
             }
 
-            // Only push the slot group if there are slots available for that day
             if (slots.length > 0) {
                 result.push(slots);
             }
         }
 
         setDocSlots(result);
-        // Reset slotIndex to 0 if slots are generated, ensuring the first day is selected
         if (result.length > 0) {
             setSlotIndex(0);
-            setSlotTime(''); // Clear selected time when dates change
+            setSlotTime("");
         }
-    };
+    }, [docInfo]);
 
     useEffect(() => {
         getAvailableSlots();
-    }, [docInfo]);
+    }, [getAvailableSlots]);
 
-    // -----------------------------
-    // BOOK APPOINTMENT (Logic unchanged)
-    // -----------------------------
     const bookAppointment = async () => {
         if (!token) {
             toast.warning("Please login first");
@@ -115,7 +101,6 @@ const Appointment = () => {
             return;
         }
 
-        // Ensure the selected slot is valid and exists in the current array
         const selectedSlotGroup = docSlots[slotIndex];
         const selectedSlot = selectedSlotGroup.find(slot => slot.time === slotTime);
 
@@ -128,8 +113,9 @@ const Appointment = () => {
         const slotDate = `${dateObj.getDate()}_${dateObj.getMonth() + 1}_${dateObj.getFullYear()}`;
 
         try {
+            // ✅ FIXED: Removed /api/ prefix — backendUrl already contains /api
             const { data } = await axios.post(
-                `${backendUrl}/api/user/book-appointment`,
+                `${backendUrl}/user/book-appointment`,
                 { docId, slotDate, slotTime },
                 { headers: { token } }
             );
@@ -142,27 +128,33 @@ const Appointment = () => {
                 toast.error(data.message);
             }
         } catch (error) {
-            toast.error("An error occurred during booking. Please try again.");
+            toast.error(
+                error.response?.data?.message ||
+                "Booking failed. Please try again."
+            );
         }
     };
 
-    if (!docInfo) return null;
+    if (!docInfo) {
+        return (
+            <div className="flex justify-center items-center h-[70vh]">
+                <p className="text-gray-500 text-lg">Loading doctor...</p>
+            </div>
+        );
+    }
 
     return (
         <div className="container mx-auto px-4 py-8">
-            {/* ---------- Doctor Details Card ----------- */}
             <div className="flex flex-col sm:flex-row gap-6 relative shadow-xl rounded-xl p-4 bg-white">
-
-                {/* Doctor Image */}
                 <div className="w-full sm:max-w-72 sm:w-1/3 flex-shrink-0">
                     <img
                         className="bg-primary w-full h-full object-cover rounded-xl shadow-lg"
                         src={docInfo.image}
-                        alt={`Dr. ${docInfo.name}`}
+                        alt={docInfo.name}
+                        loading="lazy"
                     />
                 </div>
 
-                {/* Doctor Info Panel */}
                 <div className="flex-1 rounded-lg p-6 sm:p-8 bg-white border border-gray-100 -mt-20 sm:mt-0 shadow-lg sm:shadow-none">
                     <p className="flex items-center gap-3 text-4xl font-extrabold text-gray-800">
                         {docInfo.name}
@@ -196,38 +188,28 @@ const Appointment = () => {
                 </div>
             </div>
 
-            {/* ---------- Slots Selection ---------- */}
             <div className="sm:ml-72 sm:pl-4 mt-12 font-semibold text-gray-700">
                 <h2 className="text-2xl mb-6 border-b pb-3">
                     <span className="text-primary font-extrabold">Select</span> Your Booking Slot
                 </h2>
 
-                {/* DAYS */}
                 <p className="mb-3 text-lg">Available Dates:</p>
                 {docSlots.length > 0 ? (
                     <div className="flex gap-4 overflow-x-scroll pb-4">
                         {docSlots.map((slotGroup, index) => {
-                            // Safely get the date object
                             const dateObj = slotGroup[0]?.datetime;
-                            if (!dateObj) return null; // Should not happen with the improved logic
+                            if (!dateObj) return null;
 
                             return (
-                                // Date Selector Button with Hover Effect
                                 <div
                                     key={index}
                                     onClick={() => {
                                         setSlotIndex(index);
-                                        setSlotTime(""); // Clear time selection when date changes
+                                        setSlotTime("");
                                     }}
                                     className={`
-                                        text-center 
-                                        py-4 px-6 
-                                        min-w-[75px] 
-                                        rounded-xl 
-                                        cursor-pointer 
-                                        transition-all 
-                                        duration-300 
-                                        shadow-md
+                                        text-center py-4 px-6 min-w-[75px] rounded-xl cursor-pointer 
+                                        transition-all duration-300 shadow-md
                                         ${index === slotIndex
                                             ? "bg-primary text-white scale-105 shadow-xl font-bold"
                                             : "border border-gray-300 bg-gray-50 text-gray-600 hover:border-primary hover:bg-primary/10"
@@ -244,33 +226,23 @@ const Appointment = () => {
                     <p className="text-gray-500 italic mt-4">No available dates for the next 7 days.</p>
                 )}
 
-
-                {/* SPECIFIC TIMES */}
                 <p className="mt-8 mb-3 text-lg">Available Times:</p>
                 <div className="flex flex-wrap gap-3 mt-4 max-w-full">
-                    {/* Ensure docSlots[slotIndex] exists before mapping */}
                     {docSlots[slotIndex] && docSlots[slotIndex].length > 0 ? (
                         docSlots[slotIndex].map((slot, i) => (
-                            // Time Slot Button with Beautiful Hover Effect
                             <p
                                 key={i}
                                 onClick={() => setSlotTime(slot.time)}
                                 className={`
-                                    text-sm 
-                                    font-medium 
-                                    px-5 py-2 
-                                    rounded-full 
-                                    cursor-pointer 
-                                    transition-all 
-                                    duration-200
-                                    shadow-sm
+                                    text-sm font-medium px-5 py-2 rounded-full cursor-pointer 
+                                    transition-all duration-200 shadow-sm
                                     ${slot.time === slotTime
                                         ? "bg-primary text-white shadow-lg scale-[1.05] font-semibold"
-                                        : "text-gray-700 border border-gray-400 bg-white hover:bg-primary/20 hover:border-primary hover:scale-[1.03] hover:text-primary" // Added hover:text-primary
+                                        : "text-gray-700 border border-gray-400 bg-white hover:bg-primary/20 hover:border-primary hover:scale-[1.03] hover:text-primary"
                                     }
                                 `}
                             >
-                                {slot.time.toLowerCase()}
+                                {slot.time}
                             </p>
                         ))
                     ) : (
@@ -278,35 +250,22 @@ const Appointment = () => {
                     )}
                 </div>
 
-                {/* --- BOOK APPOINTMENT BUTTON with Beautiful Hover Effect --- */}
                 <button
                     onClick={bookAppointment}
-                    className="
-                        bg-primary 
-                        text-white 
-                        text-lg 
-                        font-bold 
-                        px-12 py-4
-                        rounded-full 
-                        mt-10 mb-8
-                        shadow-xl
-                        
-                        // Hover Effects
-                        hover:bg-primary-dark // Use a proper dark variant if defined in Tailwind config
-                        hover:shadow-2xl 
-                        hover:scale-[1.02] 
-                        active:scale-[0.98] 
-                        transition-all 
-                        duration-300 
-                        ease-in-out
-                        min-w-[280px]
-                    "
+                    disabled={!slotTime}
+                    className={`
+                        bg-primary text-white text-lg font-bold px-12 py-4 rounded-full mt-10 mb-8 shadow-xl
+                        transition-all duration-300 ease-in-out min-w-[280px]
+                        ${!slotTime
+                            ? "opacity-50 cursor-not-allowed"
+                            : "hover:brightness-110 hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98]"
+                        }
+                    `}
                 >
                     Book an appointment
                 </button>
             </div>
 
-            {/* --- Related Doctors Section --- */}
             <RelatedDoctors speciality={docInfo.speciality} docId={docId} />
         </div>
     );

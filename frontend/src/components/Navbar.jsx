@@ -18,22 +18,24 @@ const Navbar = () => {
     navigate("/login");
   };
 
-  // Define shared NavLink classes for the new styling
+  // Shared classes (no dynamic bg color here — that's handled via inline style)
   const navLinkClass = ({ isActive }) =>
-    // 💡 CHANGE: Smaller padding (px-4 py-2), darker and bolder text (text-gray-950, font-bold)
     `px-4 py-2 text-base rounded-xl transition duration-300 flex items-center gap-2
-     font-bold 
-     bg-[${lightBlue}] 
-     text-gray-950 
-     border-2 border-purple-600 
+     font-bold
+     text-gray-950
+     border-2 border-purple-600
      shadow-md shadow-purple-200
-     
+
      ${isActive
-      // Active State: Darker purple border and shadow
       ? `border-purple-800 shadow-lg shadow-purple-500/50`
-      // Hover State: Darker background on hover
       : `hover:bg-cyan-500 hover:shadow-lg hover:shadow-cyan-500/50`
     }`;
+
+  // Dynamic background color handled separately since Tailwind can't
+  // generate bg-[${lightBlue}] from a runtime template string.
+  const navLinkStyle = ({ isActive }) => ({
+    backgroundColor: isActive ? undefined : lightBlue,
+  });
 
   return (
     // Navbar container (no border, slight shadow)
@@ -50,26 +52,41 @@ const Navbar = () => {
 
       {/* Desktop Menu - Increased Space (gap-6) */}
       <ul className="md:flex items-center gap-6 hidden">
-        <NavLink to="/" className={navLinkClass}>
+        <NavLink to="/" className={navLinkClass} style={navLinkStyle}>
           HOME
         </NavLink>
-        <NavLink to="/doctors" className={navLinkClass}>ALL DOCTORS</NavLink>
-        <NavLink to="/about" className={navLinkClass}>ABOUT</NavLink>
-        <NavLink to="/contact" className={navLinkClass}>CONTACT</NavLink>
+        <NavLink to="/doctors" className={navLinkClass} style={navLinkStyle}>
+          ALL DOCTORS
+        </NavLink>
+        <NavLink to="/about" className={navLinkClass} style={navLinkStyle}>
+          ABOUT
+        </NavLink>
+        <NavLink to="/contact" className={navLinkClass} style={navLinkStyle}>
+          CONTACT
+        </NavLink>
       </ul>
 
       {/* Right Side */}
       <div className="flex items-center gap-6">
 
-        {/* Logged In Dropdown (no major changes) */}
+        {/* Logged In Dropdown */}
         {token && userData ? (
           <div className="flex items-center gap-2 cursor-pointer group relative">
             <img
               className="w-10 h-10 rounded-full object-cover border-2 border-blue-900"
-              src={userData.image}
+              src={userData.image || assets.default_profile}
               alt="Profile"
+              onError={(e) => {
+                e.currentTarget.onerror = null;
+                e.currentTarget.src = assets.default_profile;
+              }}
             />
-            <img className="w-3" src={assets.dropdown_icon} alt="Dropdown" />
+            <img
+              className="w-3"
+              src={assets.dropdown_icon}
+              alt=""
+              aria-label="Open profile menu"
+            />
 
             <div
               className="absolute top-0 right-0 pt-14 hidden group-hover:block z-20"
@@ -97,12 +114,13 @@ const Navbar = () => {
             </div>
           </div>
         ) : (
-          // Login Button: Updated to use bold text and new light blue color
+          // Login Button
           <button
             onClick={() => navigate("/login")}
-            className={`bg-[${lightBlue}] text-gray-950 px-8 py-2 text-base rounded-full hidden md:block
+            style={{ backgroundColor: lightBlue }}
+            className="text-gray-950 px-8 py-2 text-base rounded-full hidden md:block
               font-bold hover:bg-cyan-500 transition duration-300 shadow-lg hover:shadow-xl
-              border-2 border-purple-600 hover:border-purple-800`}
+              border-2 border-purple-600 hover:border-purple-800"
           >
             Create account
           </button>
@@ -113,7 +131,8 @@ const Navbar = () => {
           onClick={() => setShowMenu(true)}
           className="w-7 md:hidden cursor-pointer"
           src={assets.menu_icon}
-          alt="Menu"
+          alt=""
+          aria-label="Open menu"
         />
 
         {/* Mobile Menu */}
@@ -127,7 +146,8 @@ const Navbar = () => {
               onClick={() => setShowMenu(false)}
               src={assets.cross_icon}
               className="w-7 cursor-pointer"
-              alt="Close"
+              alt=""
+              aria-label="Close menu"
             />
           </div>
 
@@ -139,13 +159,13 @@ const Navbar = () => {
           </ul>
 
           {!token && (
-            // Mobile Create Account Button: Updated for visibility
             <button
               onClick={() => {
                 navigate("/login");
                 setShowMenu(false);
               }}
-              className={`mt-8 bg-[${lightBlue}] text-gray-950 px-8 py-3 rounded-full font-bold border-2 border-purple-600`}
+              style={{ backgroundColor: lightBlue }}
+              className="mt-8 text-gray-950 px-8 py-3 rounded-full font-bold border-2 border-purple-600"
             >
               Create account
             </button>

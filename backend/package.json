@@ -1,27 +1,32 @@
 {
   "name": "prescripto-backend",
   "version": "1.0.0",
+  "description": "Doctor Appointment Booking System Backend",
   "main": "server.js",
   "type": "module",
   "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js"
+    "dev": "cross-env NODE_ENV=development nodemon server.js",
+    "start": "cross-env NODE_ENV=production node server.js"
   },
   "dependencies": {
     "axios": "^1.7.4",
     "bcrypt": "^5.1.1",
     "cloudinary": "^1.41.3",
     "cors": "^2.8.5",
-    "dotenv": "^16.4.5",
+    "dotenv-flow": "^4.1.0",
     "express": "^4.19.2",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^7.8.1",
     "multer": "1.4.5-lts.1",
-    "validator": "^13.11.0",
+    "razorpay": "^2.9.2",
     "stripe": "^12.18.0",
-    "razorpay": "^2.9.2"
+    "validator": "^13.11.0"
   },
   "devDependencies": {
+    "cross-env": "^7.0.3",
     "nodemon": "^3.1.7"
+  },
+  "engines": {
+    "node": ">=18"
   }
 }

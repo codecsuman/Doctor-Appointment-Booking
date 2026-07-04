@@ -1,155 +1,244 @@
-import { createContext, useEffect, useState } from "react";
-import { toast } from "react-toastify";
+import {
+  createContext,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import axios from "axios";
+import { toast } from "react-toastify";
 
-export const AppContext = createContext();
+export const AppContext = createContext(null);
 
 const AppContextProvider = ({ children }) => {
-    const currency = "₹";
-    const backendUrl = import.meta.env.VITE_BACKEND_URL;
+  const currency = import.meta.env.VITE_CURRENCY || "₹";
 
-    const [doctors, setDoctors] = useState([]);
-    const [token, setToken] = useState(localStorage.getItem("token") || "");
-    const [userData, setUserData] = useState(null);
-    const [appointments, setAppointments] = useState([]);
+  const backendUrl =
+    import.meta.env.VITE_BACKEND_URL ||
+    "http://localhost:4000/api";
 
-    // ------------------------------------
-    // AXIOS INSTANCE (auto adds token)
-    // ------------------------------------
-    const axiosInstance = axios.create({
-        baseURL: backendUrl,
+  const [token, setToken] = useState(
+    localStorage.getItem("token") || ""
+  );
+
+  const [doctors, setDoctors] = useState([]);
+  const [userData, setUserData] = useState(null);
+  const [appointments, setAppointments] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const isAuthenticated = !!token;
+
+  // ============================
+  // Axios Instance
+  // ============================
+  const axiosInstance = useMemo(() => {
+    return axios.create({
+      baseURL: backendUrl,
+      timeout: 15000,
+      headers: {
+        "Content-Type": "application/json",
+      },
     });
+  }, [backendUrl]);
 
-    axiosInstance.interceptors.request.use((config) => {
-        if (token) config.headers.token = token;
-        return config;
-    });
+  // ============================
+  // Axios Interceptors
+  // ============================
+  useEffect(() => {
+    const requestInterceptor =
+      axiosInstance.interceptors.request.use(
+        (config) => {
+          if (token) {
+            config.headers.token = token;
+          }
 
-    // ------------------------------------
-    // GET ALL DOCTORS
-    // ------------------------------------
-    const getDoctorsData = async () => {
-        try {
-            const { data } = await axios.get(`${backendUrl}/api/doctor/list`);
-            if (data.success) {
-                setDoctors(data.doctors);
-            } else {
-                toast.error(data.message);
-            }
-        } catch (error) {
-            console.error(error);
-            toast.error("Failed to load doctors");
+          return config;
+        },
+        (error) => Promise.reject(error)
+      );
+
+    const responseInterceptor =
+      axiosInstance.interceptors.response.use(
+        (response) => response,
+        (error) => {
+          if (error.response?.status === 401) {
+            logout();
+          }
+
+          return Promise.reject(error);
         }
+      );
+
+    return () => {
+      axiosInstance.interceptors.request.eject(
+        requestInterceptor
+      );
+
+      axiosInstance.interceptors.response.eject(
+        responseInterceptor
+      );
     };
+  }, [axiosInstance, token]);
 
-    // ------------------------------------
-    // LOAD USER PROFILE
-    // ------------------------------------
-    const loadUserProfile = async () => {
-        if (!token) return;
+  // ============================
+  // Error Handler
+  // ============================
+  const handleApiError = useCallback((error) => {
+    console.error(error);
 
-        try {
-            const { data } = await axios.get(`${backendUrl}/api/user/get-profile`, {
-                headers: { token },
-            });
-
-            if (data.success) {
-                setUserData(data.userData);
-            } else {
-                toast.error(data.message);
-            }
-        } catch (error) {
-            console.error(error);
-            toast.error("Failed to load profile");
-        }
-    };
-
-    // ------------------------------------
-    // LOAD USER APPOINTMENTS
-    // ------------------------------------
-    const loadAppointments = async () => {
-        if (!token) return;
-
-        try {
-            const { data } = await axiosInstance.get("/api/user/appointments");
-            if (data.success) {
-                setAppointments(data.appointments);
-            }
-        } catch (error) {
-            console.error("Appointments error:", error);
-        }
-    };
-
-    // ------------------------------------
-    // MOCK PAYMENT (SUCCESS)
-    // ------------------------------------
-    const makeMockPayment = async (appointmentId, amount) => {
-        try {
-            const { data } = await axiosInstance.post("/api/payment/mock", {
-                appointmentId,
-                amount,
-            });
-
-            if (data.success) {
-                toast.success("Payment Successful!");
-                loadAppointments();
-                return true;
-            } else {
-                toast.error(data.message);
-                return false;
-            }
-        } catch (error) {
-            toast.error("Payment failed");
-            return false;
-        }
-    };
-
-    // ------------------------------------
-    // LOAD DOCTORS ON FIRST RENDER
-    // ------------------------------------
-    useEffect(() => {
-        getDoctorsData();
-    }, []);
-
-    // ------------------------------------
-    // LOAD PROFILE + APPOINTMENTS WHEN TOKEN CHANGES
-    // ------------------------------------
-    useEffect(() => {
-        if (token) {
-            localStorage.setItem("token", token);
-            loadUserProfile();
-            loadAppointments();
-        } else {
-            localStorage.removeItem("token");
-            setUserData(null);
-            setAppointments([]);
-        }
-    }, [token]);
-
-    // ------------------------------------
-    // CONTEXT VALUE
-    // ------------------------------------
-    const value = {
-        backendUrl,
-        currency,
-        token,
-        setToken,
-        doctors,
-        userData,
-        appointments,
-
-        axiosInstance,
-        getDoctorsData,
-        loadUserProfile,
-        loadAppointments,
-        makeMockPayment,
-    };
-
-    return (
-        <AppContext.Provider value={value}>
-            {children}
-        </AppContext.Provider>
+    toast.error(
+      error.response?.data?.message ||
+        "Something went wrong"
     );
+  }, []);
+
+  // ============================
+  // Logout
+  // ============================
+  const logout = useCallback(() => {
+    setToken("");
+    setUserData(null);
+    setAppointments([]);
+
+    localStorage.removeItem("token");
+  }, []);
+
+  // ============================
+  // Doctors
+  // ============================
+  const getDoctorsData = useCallback(async () => {
+    try {
+      setLoading(true);
+
+      const { data } = await axiosInstance.get(
+        "/doctor/list"
+      );
+
+      if (data.success) {
+        setDoctors(data.doctors);
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      handleApiError(error);
+    } finally {
+      setLoading(false);
+    }
+  }, [axiosInstance, handleApiError]);
+
+  // ============================
+  // User Profile
+  // ============================
+  const loadUserProfile = useCallback(async () => {
+    if (!token) return;
+
+    try {
+      const { data } = await axiosInstance.get(
+        "/user/get-profile"
+      );
+
+      if (data.success) {
+        setUserData(data.userData);
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      handleApiError(error);
+    }
+  }, [axiosInstance, token, handleApiError]);
+
+  // ============================
+  // User Appointments
+  // ============================
+  const loadAppointments = useCallback(async () => {
+    if (!token) return;
+
+    try {
+      const { data } = await axiosInstance.get(
+        "/user/appointments"
+      );
+
+      if (data.success) {
+        setAppointments(data.appointments);
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      handleApiError(error);
+    }
+  }, [axiosInstance, token, handleApiError]);
+
+  // ============================
+  // Initial Load
+  // ============================
+  useEffect(() => {
+    getDoctorsData();
+  }, [getDoctorsData]);
+
+  // ============================
+  // Token Change
+  // ============================
+  useEffect(() => {
+    if (token) {
+      localStorage.setItem("token", token);
+
+      loadUserProfile();
+      loadAppointments();
+    } else {
+      localStorage.removeItem("token");
+      setUserData(null);
+      setAppointments([]);
+    }
+  }, [token, loadUserProfile, loadAppointments]);
+
+  // ============================
+  // Context Value
+  // ============================
+  const value = useMemo(
+    () => ({
+      currency,
+      backendUrl,
+
+      token,
+      setToken,
+      logout,
+      isAuthenticated,
+
+      doctors,
+      userData,
+      setUserData,
+      appointments,
+
+      loading,
+
+      axiosInstance,
+
+      getDoctorsData,
+      loadUserProfile,
+      loadAppointments,
+    }),
+    [
+      currency,
+      backendUrl,
+      token,
+      doctors,
+      userData,
+      appointments,
+      loading,
+      axiosInstance,
+      getDoctorsData,
+      loadUserProfile,
+      loadAppointments,
+      logout,
+      isAuthenticated,
+    ]
+  );
+
+  return (
+    <AppContext.Provider value={value}>
+      {children}
+    </AppContext.Provider>
+  );
 };
 
 export default AppContextProvider;

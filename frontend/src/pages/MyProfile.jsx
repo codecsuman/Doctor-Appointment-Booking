@@ -1,17 +1,16 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useMemo, useEffect } from "react";
 import { AppContext } from "../context/AppContext";
-import axios from "axios";
 import { toast } from "react-toastify";
 import { assets } from "../assets/assets";
 
 const MyProfile = () => {
     const [isEdit, setIsEdit] = useState(false);
     const [image, setImage] = useState(null);
+    const [saving, setSaving] = useState(false);
 
-    const { token, backendUrl, userData, setUserData, loadUserProfileData } =
+    const { userData, setUserData, loadUserProfile, axiosInstance } =
         useContext(AppContext);
 
-    // Handler for local data changes (used by all inputs)
     const handleAddressChange = (key, value) => {
         setUserData((prev) => ({
             ...prev,
@@ -27,10 +26,10 @@ const MyProfile = () => {
     };
 
     const updateUserProfileData = async () => {
+        setSaving(true);
         try {
             const formData = new FormData();
 
-            // Append all fields, assuming they are defined on userData
             formData.append("name", userData.name);
             formData.append("phone", userData.phone);
             formData.append("address", JSON.stringify(userData.address));
@@ -39,37 +38,60 @@ const MyProfile = () => {
 
             if (image) formData.append("image", image);
 
-            const { data } = await axios.post(
-                backendUrl + "/api/user/update-profile",
+            const { data } = await axiosInstance.post(
+                "/user/update-profile",
                 formData,
                 {
                     headers: {
-                        token,
-                        // Axios sets Content-Type boundary for FormData automatically
-                    }
+                        "Content-Type": "multipart/form-data",
+                    },
                 }
             );
 
             if (data.success) {
                 toast.success("Profile updated successfully! 🎉");
-                await loadUserProfileData(); // Reload data from backend to ensure state is fresh
+                await loadUserProfile();
                 setIsEdit(false);
                 setImage(null);
-            } else toast.error(data.message);
+            } else {
+                toast.error(data.message);
+            }
         } catch (error) {
-            toast.error("Failed to save profile. Please try again.");
+            toast.error(
+                error.response?.data?.message || "Failed to save profile. Please try again."
+            );
+        } finally {
+            setSaving(false);
         }
     };
 
-    // Placeholder input style class
-    const inputStyle = "w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary bg-white transition duration-200 text-gray-700";
+    const inputStyle =
+        "w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary bg-white transition duration-200 text-gray-700";
     const labelStyle = "block text-sm font-medium text-gray-600 mb-1";
     const displayTextStyle = "text-gray-800 font-medium";
 
-    if (!userData || !userData.address) return null;
+    // Image preview with memory cleanup
+    const preview = useMemo(() => {
+        return image ? URL.createObjectURL(image) : (userData?.image || assets.profile_pic);
+    }, [image, userData?.image]);
+
+    useEffect(() => {
+        return () => {
+            if (image && preview.startsWith("blob:")) {
+                URL.revokeObjectURL(preview);
+            }
+        };
+    }, [preview, image]);
+
+    if (!userData || !userData.address) {
+        return (
+            <div className="flex justify-center items-center h-[70vh]">
+                <div className="w-10 h-10 border-4 border-gray-200 border-t-primary rounded-full animate-spin"></div>
+            </div>
+        );
+    }
 
     return (
-        // 1. Card Structure: Centered container with shadow for goo level aesthetics
         <div className="container mx-auto px-4 py-8">
             <div className="max-w-xl mx-auto bg-white p-6 sm:p-10 rounded-xl shadow-2xl border border-gray-100 transition-all duration-300">
 
@@ -80,16 +102,15 @@ const MyProfile = () => {
                 {/* Profile Image & Name Section */}
                 <div className="flex flex-col items-center sm:flex-row sm:items-start sm:gap-6 border-b pb-6 mb-6">
 
-                    {/* Profile Image Upload/Display */}
                     {isEdit ? (
                         <label htmlFor="image" className="group relative block cursor-pointer mb-4 sm:mb-0">
                             <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-primary/50 group-hover:border-primary transition-all duration-300">
                                 <img
                                     className="w-full h-full object-cover group-hover:opacity-70 transition-opacity duration-300"
-                                    src={image ? URL.createObjectURL(image) : userData.image || assets.default_user} // Use default placeholder if needed
+                                    src={preview}
                                     alt="Profile"
+                                    loading="lazy"
                                 />
-                                {/* Overlay icon for edit mode */}
                                 <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-full">
                                     <img className="w-8" src={assets.upload_icon} alt="Upload" />
                                 </div>
@@ -98,19 +119,29 @@ const MyProfile = () => {
                                 type="file"
                                 id="image"
                                 hidden
-                                onChange={(e) => setImage(e.target.files[0])}
+                                onChange={(e) => {
+                                    const file = e.target.files[0];
+                                    if (file && file.size > 5 * 1024 * 1024) {
+                                        toast.error("Maximum image size is 5MB");
+                                        return;
+                                    }
+                                    setImage(file);
+                                }}
                                 accept="image/*"
                             />
                         </label>
                     ) : (
                         <img
                             className="w-32 h-32 object-cover rounded-full border-4 border-primary/10 shadow-lg mb-4 sm:mb-0"
-                            src={userData.image || assets.default_user}
+                            src={userData.image || assets.profile_pic}
+                            onError={(e) => {
+                                e.currentTarget.src = assets.profile_pic;
+                            }}
                             alt="Profile Image"
+                            loading="lazy"
                         />
                     )}
 
-                    {/* Name Field */}
                     <div className="text-center sm:text-left flex flex-col justify-center">
                         {isEdit ? (
                             <input
@@ -136,7 +167,6 @@ const MyProfile = () => {
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
 
-                        {/* Phone */}
                         <div>
                             <p className={labelStyle}>Phone:</p>
                             {isEdit ? (
@@ -151,39 +181,36 @@ const MyProfile = () => {
                             )}
                         </div>
 
-                        {/* Email (Read-only for security) */}
                         <div>
                             <p className={labelStyle}>Email (Read-Only):</p>
                             <p className="text-blue-600 italic">{userData.email}</p>
                         </div>
 
-                        {/* Address Line 1 */}
                         <div className="sm:col-span-2">
                             <p className={labelStyle}>Address Line 1:</p>
                             {isEdit ? (
                                 <input
                                     className={inputStyle}
                                     type="text"
-                                    value={userData.address.line1}
+                                    value={userData.address?.line1 || ""}
                                     onChange={(e) => handleAddressChange("line1", e.target.value)}
                                 />
                             ) : (
-                                <p className={displayTextStyle}>{userData.address.line1 || "N/A"}</p>
+                                <p className={displayTextStyle}>{userData.address?.line1 || "N/A"}</p>
                             )}
                         </div>
 
-                        {/* Address Line 2 */}
                         <div className="sm:col-span-2">
                             <p className={labelStyle}>Address Line 2 (City/Zip):</p>
                             {isEdit ? (
                                 <input
                                     className={inputStyle}
                                     type="text"
-                                    value={userData.address.line2}
+                                    value={userData.address?.line2 || ""}
                                     onChange={(e) => handleAddressChange("line2", e.target.value)}
                                 />
                             ) : (
-                                <p className={displayTextStyle}>{userData.address.line2 || "N/A"}</p>
+                                <p className={displayTextStyle}>{userData.address?.line2 || "N/A"}</p>
                             )}
                         </div>
                     </div>
@@ -197,7 +224,6 @@ const MyProfile = () => {
 
                     <div className="grid grid-cols-2 gap-6 text-sm">
 
-                        {/* Gender */}
                         <div>
                             <p className={labelStyle}>Gender:</p>
                             {isEdit ? (
@@ -215,7 +241,6 @@ const MyProfile = () => {
                             )}
                         </div>
 
-                        {/* Birthday */}
                         <div>
                             <p className={labelStyle}>Birthday:</p>
                             {isEdit ? (
@@ -239,7 +264,7 @@ const MyProfile = () => {
                             <button
                                 onClick={() => {
                                     setIsEdit(false);
-                                    loadUserProfileData(); // Discard local changes by reloading data
+                                    loadUserProfile();
                                     setImage(null);
                                 }}
                                 className="px-8 py-3 rounded-full border border-gray-400 text-gray-600 font-bold hover:bg-gray-100 transition-all"
@@ -248,9 +273,10 @@ const MyProfile = () => {
                             </button>
                             <button
                                 onClick={updateUserProfileData}
-                                className="bg-primary px-8 py-3 rounded-full text-white font-bold shadow-lg shadow-primary/30 hover:bg-primary-dark hover:shadow-xl transition-all"
+                                disabled={saving}
+                                className="bg-primary px-8 py-3 rounded-full text-white font-bold shadow-lg hover:brightness-110 hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                                Save Changes
+                                {saving ? "Saving..." : "Save Changes"}
                             </button>
                         </div>
                     ) : (

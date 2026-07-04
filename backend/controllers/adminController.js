@@ -10,183 +10,282 @@ import { v2 as cloudinary } from "cloudinary";
 // Admin Login
 // =======================================
 const loginAdmin = async (req, res) => {
-    try {
-        const { email, password } = req.body;
+  try {
+    const { email, password } = req.body;
 
-        if (
-            email === process.env.ADMIN_EMAIL &&
-            password === process.env.ADMIN_PASSWORD
-        ) {
-            // Secure token with role
-            const token = jwt.sign(
-                {
-                    role: "admin",
-                    email: process.env.ADMIN_EMAIL,
-                },
-                process.env.JWT_SECRET
-            );
-
-            return res.json({ success: true, token });
-        }
-
-        return res.json({ success: false, message: "Invalid credentials" });
-    } catch (error) {
-        console.error("loginAdmin:", error);
-        return res.json({ success: false, message: error.message });
+    if (
+      email !== process.env.ADMIN_EMAIL ||
+      password !== process.env.ADMIN_PASSWORD
+    ) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid credentials",
+      });
     }
+
+    const token = jwt.sign(
+      {
+        role: "admin",
+        email: process.env.ADMIN_EMAIL,
+      },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "7d",
+      }
+    );
+
+    return res.status(200).json({
+      success: true,
+      token,
+    });
+  } catch (error) {
+    console.error("loginAdmin:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
 };
 
 // =======================================
 // Get All Appointments
 // =======================================
 const appointmentsAdmin = async (req, res) => {
-    try {
-        const appointments = await appointmentModel.find({});
-        res.json({ success: true, appointments });
-    } catch (error) {
-        console.error("appointmentsAdmin:", error);
-        res.json({ success: false, message: error.message });
-    }
+  try {
+    const appointments = await appointmentModel
+      .find({})
+      .sort({ date: -1 });
+
+    return res.status(200).json({
+      success: true,
+      appointments,
+    });
+  } catch (error) {
+    console.error("appointmentsAdmin:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
 };
 
 // =======================================
-// Cancel Appointment (Admin)
+// Cancel Appointment
 // =======================================
 const appointmentCancel = async (req, res) => {
-    try {
-        const { appointmentId } = req.body;
+  try {
+    const { appointmentId } = req.body;
 
-        await appointmentModel.findByIdAndUpdate(appointmentId, {
-            cancelled: true,
-        });
+    const appointment = await appointmentModel.findById(appointmentId);
 
-        res.json({ success: true, message: "Appointment Cancelled" });
-    } catch (error) {
-        console.error("appointmentCancel:", error);
-        res.json({ success: false, message: error.message });
+    if (!appointment) {
+      return res.status(404).json({
+        success: false,
+        message: "Appointment not found",
+      });
     }
+
+    appointment.cancelled = true;
+    await appointment.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Appointment Cancelled Successfully",
+    });
+  } catch (error) {
+    console.error("appointmentCancel:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
 };
 
 // =======================================
 // Add Doctor
 // =======================================
 const addDoctor = async (req, res) => {
-    try {
-        const {
-            name,
-            email,
-            password,
-            speciality,
-            degree,
-            experience,
-            about,
-            fees,
-            address,
-        } = req.body;
+  try {
+    const {
+      name,
+      email,
+      password,
+      speciality,
+      degree,
+      experience,
+      about,
+      fees,
+      address,
+    } = req.body;
 
-        const imageFile = req.file;
-
-        // Validate fields
-        if (
-            !name ||
-            !email ||
-            !password ||
-            !speciality ||
-            !degree ||
-            !experience ||
-            !about ||
-            !fees ||
-            !address
-        ) {
-            return res.json({ success: false, message: "Missing Details" });
-        }
-
-        if (!validator.isEmail(email)) {
-            return res.json({ success: false, message: "Invalid Email Format" });
-        }
-
-        if (password.length < 8) {
-            return res.json({
-                success: false,
-                message: "Password must be at least 8 characters",
-            });
-        }
-
-        // Hash password
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(password, salt);
-
-        // Upload Image
-        const imgUpload = await cloudinary.uploader.upload(imageFile.path, {
-            resource_type: "image",
-        });
-        const imageUrl = imgUpload.secure_url;
-
-        const doctorData = {
-            name,
-            email,
-            image: imageUrl,
-            password: hashedPassword,
-            speciality,
-            degree,
-            experience,
-            about,
-            fees,
-            address: JSON.parse(address),
-            date: Date.now(),
-        };
-
-        const newDoctor = new doctorModel(doctorData);
-        await newDoctor.save();
-
-        res.json({ success: true, message: "Doctor Added Successfully" });
-    } catch (error) {
-        console.error("addDoctor:", error);
-        res.json({ success: false, message: error.message });
+    // Validate fields
+    if (
+      !name ||
+      !email ||
+      !password ||
+      !speciality ||
+      !degree ||
+      !experience ||
+      !about ||
+      !fees ||
+      !address
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "All fields are required",
+      });
     }
+
+    // Validate image
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: "Doctor image is required",
+      });
+    }
+
+    // Validate email
+    if (!validator.isEmail(email)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid email format",
+      });
+    }
+
+    // Validate password
+    if (password.length < 8) {
+      return res.status(400).json({
+        success: false,
+        message: "Password must be at least 8 characters",
+      });
+    }
+
+    // Check existing doctor
+    const doctorExists = await doctorModel.findOne({ email });
+
+    if (doctorExists) {
+      return res.status(409).json({
+        success: false,
+        message: "Doctor already exists",
+      });
+    }
+
+    // Parse address safely
+    let parsedAddress;
+
+    try {
+      parsedAddress = JSON.parse(address);
+    } catch {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid address format",
+      });
+    }
+
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Upload image
+    const uploadResult = await cloudinary.uploader.upload(req.file.path, {
+      resource_type: "image",
+      folder: "doctors",
+    });
+
+    const doctor = new doctorModel({
+      name,
+      email,
+      image: uploadResult.secure_url,
+      password: hashedPassword,
+      speciality,
+      degree,
+      experience,
+      about,
+      fees,
+      address: parsedAddress,
+      available: true,
+      date: Date.now(),
+    });
+
+    await doctor.save();
+
+    return res.status(201).json({
+      success: true,
+      message: "Doctor Added Successfully",
+    });
+  } catch (error) {
+    console.error("addDoctor:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
 };
 
 // =======================================
-// Get All Doctors For Admin
+// Get All Doctors
 // =======================================
 const allDoctors = async (req, res) => {
-    try {
-        const doctors = await doctorModel.find({}).select("-password");
-        res.json({ success: true, doctors });
-    } catch (error) {
-        console.error("allDoctors:", error);
-        res.json({ success: false, message: error.message });
-    }
+  try {
+    const doctors = await doctorModel
+      .find({})
+      .select("-password")
+      .sort({ date: -1 });
+
+    return res.status(200).json({
+      success: true,
+      doctors,
+    });
+  } catch (error) {
+    console.error("allDoctors:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
 };
 
 // =======================================
 // Admin Dashboard
 // =======================================
 const adminDashboard = async (req, res) => {
-    try {
-        const doctors = await doctorModel.find({});
-        const users = await userModel.find({});
-        const appointments = await appointmentModel.find({});
+  try {
+    const doctors = await doctorModel.find({});
+    const users = await userModel.find({});
+    const appointments = await appointmentModel
+      .find({})
+      .sort({ date: -1 });
 
-        const dashData = {
-            doctors: doctors.length,
-            patients: users.length,
-            appointments: appointments.length,
-            latestAppointments: appointments.reverse(),
-        };
+    const dashData = {
+      doctors: doctors.length,
+      patients: users.length,
+      appointments: appointments.length,
+      latestAppointments: appointments.slice(0, 5),
+    };
 
-        res.json({ success: true, dashData });
-    } catch (error) {
-        console.error("adminDashboard:", error);
-        res.json({ success: false, message: error.message });
-    }
+    return res.status(200).json({
+      success: true,
+      dashData,
+    });
+  } catch (error) {
+    console.error("adminDashboard:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
 };
 
 export {
-    loginAdmin,
-    appointmentsAdmin,
-    appointmentCancel,
-    addDoctor,
-    allDoctors,
-    adminDashboard,
+  loginAdmin,
+  appointmentsAdmin,
+  appointmentCancel,
+  addDoctor,
+  allDoctors,
+  adminDashboard,
 };

@@ -2,8 +2,12 @@ import React from "react";
 import { assets } from "../assets/assets";
 
 const Contact = () => {
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    // TODO: Connect to backend or email service
+  };
+
   return (
-    // Added container for better spacing
     <div className="container mx-auto px-4 py-10">
       {/* --- Section 1: CONTACT US Heading --- */}
       <div className="text-center text-3xl sm:text-4xl pt-10 mb-12 text-gray-500 font-light">
@@ -19,7 +23,8 @@ const Contact = () => {
           <img
             className="w-full h-auto object-cover rounded-xl"
             src={assets.contact_image}
-            alt="Contact us image: a person on the phone"
+            alt="Contact us"
+            loading="lazy"
           />
         </div>
 
@@ -30,7 +35,10 @@ const Contact = () => {
           <div>
             <p className="font-extrabold text-xl text-primary border-b-2 border-primary pb-1 mb-3">OUR OFFICE</p>
             <p className="text-gray-600 leading-relaxed">
-              <span className="font-semibold">Prescripto HQ:</span> KOLKATA CIT MORE <br /> CITMORE KOLKATA INDIA -700105
+              <span className="font-semibold">Prescripto HQ</span><br />
+              CIT More<br />
+              Kolkata, West Bengal 700105<br />
+              India
             </p>
           </div>
 
@@ -38,8 +46,21 @@ const Contact = () => {
           <div>
             <p className="font-extrabold text-xl text-primary border-b-2 border-primary pb-1 mb-3">CONTACT</p>
             <p className="text-gray-600 leading-relaxed">
-              <span className="font-semibold">Tel:</span>+91 8597376239<br />
-              <span className="font-semibold">Email:</span> sumanjhanp1@gmail.com
+              <span className="font-semibold">Tel:</span>{" "}
+              <a
+                href="tel:+918597376239"
+                className="text-primary hover:underline"
+              >
+                +91 8597376239
+              </a>
+              <br />
+              <span className="font-semibold">Email:</span>{" "}
+              <a
+                href="mailto:sumanjhanp1@gmail.com"
+                className="text-primary hover:underline"
+              >
+                sumanjhanp1@gmail.com
+              </a>
             </p>
           </div>
 
@@ -54,37 +75,17 @@ const Contact = () => {
             </p>
           </div>
 
-          {/* --- EXPLORE JOBS BUTTON with Beautiful Hover Effect --- */}
+          {/* --- EXPLORE JOBS BUTTON --- */}
           <button
-            className="
-              // Base Styling
-              bg-white 
-              border 
-              border-primary 
-              text-primary 
-              font-bold 
-              px-10 py-3 
-              text-base 
-              rounded-full 
-              shadow-md
-
-              // Beautiful Hover Effect
-              hover:bg-primary 
-              hover:text-white 
-              hover:shadow-lg 
-              hover:scale-[1.02] 
-              active:scale-[0.98] 
-              transition-all 
-              duration-300
-              ease-in-out
-            "
+            onClick={() => window.open("https://linkedin.com", "_blank")}
+            className="bg-white border border-primary text-primary font-bold px-10 py-3 text-base rounded-full shadow-md hover:bg-primary hover:text-white hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 ease-in-out"
           >
             Explore Jobs
           </button>
         </div>
       </div>
 
-      <hr className="my-16 border-t-2 border-gray-100" />
+      <hr className="my-16 border-gray-200" />
 
       {/* --- Section 3: Contact Form --- */}
       <div className="max-w-4xl mx-auto">
@@ -92,7 +93,7 @@ const Contact = () => {
           Send Us A <span className="text-primary">Message</span>
         </h2>
 
-        <form className="bg-white p-8 sm:p-12 shadow-2xl rounded-xl border border-gray-100">
+        <form onSubmit={handleSubmit} className="bg-white p-8 sm:p-12 shadow-2xl rounded-xl border border-gray-100">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
 
             {/* Full Name */}
@@ -104,7 +105,7 @@ const Contact = () => {
                 type="text"
                 id="name"
                 placeholder="Your Full Name"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary transition duration-150"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition duration-150"
                 required
               />
             </div>
@@ -118,7 +119,7 @@ const Contact = () => {
                 type="email"
                 id="email"
                 placeholder="you@example.com"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary transition duration-150"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition duration-150"
                 required
               />
             </div>
@@ -134,7 +135,7 @@ const Contact = () => {
               type="text"
               id="subject"
               placeholder="E.g., Partnership Inquiry"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary transition duration-150"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition duration-150"
               required
             />
           </div>
@@ -148,7 +149,7 @@ const Contact = () => {
               id="message"
               rows="5"
               placeholder="How can we help you today?"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary transition duration-150 resize-none"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition duration-150 resize-none"
               required
             ></textarea>
           </div>
@@ -156,19 +157,7 @@ const Contact = () => {
           {/* Submit Button */}
           <button
             type="submit"
-            className="
-              w-full 
-              bg-primary 
-              text-white 
-              font-extrabold 
-              py-3 
-              rounded-lg 
-              shadow-lg
-              hover:bg-primary-dark // Assuming a darker primary variant for hover
-              hover:shadow-xl
-              hover:scale-[1.005]
-              transition-all duration-300
-            "
+            className="w-full bg-primary text-white font-extrabold py-3 rounded-lg shadow-lg hover:brightness-110 hover:shadow-xl hover:scale-[1.01] transition-all duration-300"
           >
             Send Message
           </button>

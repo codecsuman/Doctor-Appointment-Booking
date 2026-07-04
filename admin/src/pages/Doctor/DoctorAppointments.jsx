@@ -4,25 +4,37 @@ import { AppContext } from "../../context/AppContext";
 import { assets } from "../../assets/assets";
 
 const DoctorAppointments = () => {
-  // Destructure state and functions from DoctorContext
-  const { dToken, appointments, getAppointments, cancelAppointment, completeAppointment } =
-    useContext(DoctorContext);
+  const {
+    dToken,
+    appointments,
+    isLoading,
+    getAppointments,
+    cancelAppointment,
+    completeAppointment,
+  } = useContext(DoctorContext);
 
-  // Destructure utility functions from AppContext
   const { slotDateFormat, calculateAge, currency } = useContext(AppContext);
 
-  // Fetch appointments when the component mounts and the doctor token is available
   useEffect(() => {
-    if (dToken) getAppointments();
-  }, [dToken]);
+    if (dToken) {
+      getAppointments();
+    }
+  }, [dToken, getAppointments]);
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-[70vh]">
+        <div className="w-10 h-10 border-4 border-gray-200 border-t-primary rounded-full animate-spin"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6">
       <h2 className="text-xl font-bold mb-4 text-gray-800">All Appointments</h2>
 
-      <div className="table-container bg-white border rounded shadow-md overflow-x-auto">
-        {/* Table Header (Using CSS Grid for structure - assume doctor-table-header defines the columns) */}
-        <div className="table-header doctor-table-header hidden md:grid py-3 px-6 border-b font-medium text-gray-700 bg-gray-100">
+      <div className="bg-white border rounded shadow-md overflow-x-auto">
+        <div className="hidden md:grid grid-cols-[0.4fr_2fr_1fr_1fr_2fr_1fr_1fr] py-3 px-6 border-b font-medium text-gray-700 bg-gray-100">
           <p>#</p>
           <p>Patient</p>
           <p>Payment</p>
@@ -32,79 +44,91 @@ const DoctorAppointments = () => {
           <p>Action</p>
         </div>
 
-        {/* Map through appointments */}
-        {appointments.map((item, i) => (
-          // Table Row (Using CSS Grid for structure - assume doctor-table-row defines the columns)
-          <div
-            key={i}
-            className="table-row doctor-table-row grid grid-cols-[0.3fr_1.5fr_0.8fr_0.5fr_1.5fr_0.8fr_1fr] 
-                       items-center text-sm text-gray-700 py-3 px-6 border-b hover:bg-gray-50 transition-colors"
-          >
-            {/* # */}
-            <p>{i + 1}</p>
-
-            {/* Patient */}
-            <div className="flex items-center gap-2">
-              <img
-                src={item.userData.image || assets.default_user}
-                className="w-8 h-8 rounded-full object-cover"
-                alt="Patient"
-              />
-              <p className="font-medium">{item.userData.name || "Unknown Patient"}</p>
-            </div>
-
-            {/* Payment */}
-            <p className={`payment-badge font-semibold ${item.payment ? 'text-blue-600' : 'text-orange-600'}`}>
-              {item.payment ? "Online" : "Cash"}
-            </p>
-
-            {/* Age */}
-            <p className="text-gray-500">
-              {item.userData.dob ? calculateAge(item.userData.dob) : "N/A"}
-            </p>
-
-            {/* Date & Time */}
-            <p className="font-mono text-xs">
-              {slotDateFormat(item.slotDate)}, {item.slotTime}
-            </p>
-
-            {/* Fees */}
-            <p className="font-bold text-green-600">
-              {currency}{item.amount || 0}
-            </p>
-
-            {/* Action / Status */}
-            {item.cancelled ? (
-              <span className="status-cancel text-red-500 text-xs font-bold bg-red-100 p-1 rounded text-center">
-                Cancelled
-              </span>
-            ) : item.isCompleted ? (
-              <span className="status-done text-green-600 text-xs font-bold bg-green-100 p-1 rounded text-center">
-                Completed
-              </span>
-            ) : (
-              // Actions for Pending appointments (Cancel and Complete)
-              <div className="flex gap-2 justify-center">
-                {/* Cancel Icon */}
-                <img
-                  src={assets.cancel_icon}
-                  className="action-icon w-6 h-6 cursor-pointer opacity-70 hover:opacity-100 transition-opacity"
-                  onClick={() => cancelAppointment(item._id)}
-                  title="Cancel Appointment"
-                  alt="Cancel"
-                />
-                {/* Complete Icon */}
-                <img
-                  src={assets.tick_icon}
-                  className="action-icon w-6 h-6 cursor-pointer opacity-70 hover:opacity-100 transition-opacity"
-                  onClick={() => completeAppointment(item._id)}
-                  title="Complete Appointment"
-                  alt="Complete"
-                />
-              </div>
-            )}
+        {appointments.length === 0 ? (
+          <div className="py-10 text-center text-gray-500">
+            <p className="text-lg font-medium">No appointments found.</p>
+            <p className="text-sm text-gray-400 mt-1">New bookings will appear here.</p>
           </div>
-        ))}
+        ) : (
+          appointments.map((item) => (
+            <div
+              key={item._id}
+              className="grid grid-cols-[0.4fr_2fr_1fr_1fr_2fr_1fr_1fr] 
+                         items-center text-sm text-gray-700 py-3 px-6 border-b hover:bg-gray-50 transition-colors"
+            >
+              <p>{appointments.indexOf(item) + 1}</p>
+
+              <div className="flex items-center gap-2">
+                <img
+                  src={item?.userData?.image || assets.default_user}
+                  onError={(e) => {
+                    e.currentTarget.src = assets.default_user;
+                  }}
+                  className="w-8 h-8 rounded-full object-cover"
+                  alt="Patient"
+                  loading="lazy"
+                />
+                <p className="font-medium">{item?.userData?.name || "Unknown Patient"}</p>
+              </div>
+
+              <span className={`px-2 py-1 rounded-full text-xs font-semibold w-fit ${
+                item.payment
+                  ? "bg-blue-100 text-blue-700"
+                  : "bg-yellow-100 text-yellow-700"
+              }`}>
+                {item.payment ? "Online" : "Cash"}
+              </span>
+
+              <p className="text-gray-500">
+                {item?.userData?.dob ? calculateAge(item.userData.dob) : "N/A"}
+              </p>
+
+              <div>
+                <p className="font-mono text-xs">{slotDateFormat(item.slotDate)}</p>
+                <p className="text-xs text-gray-400">{item.slotTime}</p>
+              </div>
+
+              <p className="font-bold text-green-600">
+                {currency}{Number(item.amount).toLocaleString()}
+              </p>
+
+              {item.cancelled ? (
+                <span className="text-red-500 text-xs font-bold bg-red-100 p-1 rounded text-center flex items-center justify-center gap-1">
+                  <span>❌</span> Cancelled
+                </span>
+              ) : item.isCompleted ? (
+                <span className="text-green-600 text-xs font-bold bg-green-100 p-1 rounded text-center flex items-center justify-center gap-1">
+                  <span>✅</span> Completed
+                </span>
+              ) : (
+                <div className="flex gap-2 justify-center">
+                  <img
+                    src={assets.cancel_icon}
+                    className="w-6 h-6 cursor-pointer opacity-70 hover:opacity-100 hover:scale-110 transition-all duration-200"
+                    onClick={() => {
+                      if (window.confirm("Cancel this appointment?")) {
+                        cancelAppointment(item._id);
+                      }
+                    }}
+                    title="Cancel Appointment"
+                    alt="Cancel"
+                  />
+                  <img
+                    src={assets.tick_icon}
+                    className="w-6 h-6 cursor-pointer opacity-70 hover:opacity-100 hover:scale-110 transition-all duration-200"
+                    onClick={() => {
+                      if (window.confirm("Mark this appointment as completed?")) {
+                        completeAppointment(item._id);
+                      }
+                    }}
+                    title="Complete Appointment"
+                    alt="Complete"
+                  />
+                </div>
+              )}
+            </div>
+          ))
+        )}
       </div>
     </div>
   );

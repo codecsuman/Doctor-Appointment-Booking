@@ -1,63 +1,50 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useMemo, useState } from "react";
 import { AppContext } from "../context/AppContext";
 import { useNavigate, useParams } from "react-router-dom";
-// Assuming assets is imported if used in the actual component, 
-// though not directly used in the current card display logic.
+
+// Extracted categories — can be moved to a constants file if used elsewhere
+const CATEGORIES = [
+  "General physician",
+  "Gynecologist",
+  "Dermatologist",
+  "Pediatricians",
+  "Neurologist",
+  "Gastroenterologist",
+];
 
 const Doctors = () => {
   const { speciality } = useParams();
-  // Assume currency is available via AppContext for displaying fees
   const { doctors, currency } = useContext(AppContext);
-
   const navigate = useNavigate();
-  const [filterDoc, setFilterDoc] = useState([]);
   const [showFilter, setShowFilter] = useState(false);
-  const [loading, setLoading] = useState(true);
 
-  // Helper function to apply filtering logic
-  const applyFilter = () => {
-    setLoading(true);
+  // Memoized filtering — no artificial delay, no extra state
+  const filterDoc = useMemo(() => {
+    if (!speciality) return doctors;
+    return doctors.filter((doc) => doc.speciality === speciality);
+  }, [doctors, speciality]);
 
-    // Filter logic
-    let filteredList = doctors;
-    if (speciality) {
-      filteredList = doctors.filter((doc) => doc.speciality === speciality);
-    }
-
-    // Use a short delay for smooth loading transition (600ms)
-    setTimeout(() => {
-      setFilterDoc(filteredList);
-      setLoading(false);
-    }, 600);
-  };
-
+  // Smooth scroll to top on filter change
   useEffect(() => {
-    // Scroll to the top when filters or doctors data changes (better UX)
-    window.scrollTo(0, 0);
-    applyFilter();
-  }, [doctors, speciality]); // Dependency array: Re-run when doctors data or specialty param changes
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  }, [doctors, speciality]);
 
-  const categories = [
-    "General physician",
-    "Gynecologist",
-    "Dermatologist",
-    "Pediatricians",
-    "Neurologist",
-    "Gastroenterologist",
-  ];
-
-  // ⭐ Skeleton Loader Component
+  // Skeleton Loader Component
   const SkeletonCard = () => (
     <div className="border border-gray-200 bg-white rounded-xl p-4 animate-pulse h-full">
       <div className="w-full h-48 bg-gray-200 rounded-lg mb-4"></div>
-
       <div className="w-4/5 h-5 bg-gray-300 rounded mb-2"></div>
       <div className="w-3/5 h-4 bg-gray-200 rounded mb-1"></div>
       <div className="w-1/3 h-4 bg-gray-300 rounded mb-3"></div>
-
       <div className="w-1/2 h-5 bg-gray-200 rounded"></div>
     </div>
   );
+
+  // Determine loading state based on whether doctors data is available yet
+  const loading = doctors.length === 0;
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -86,23 +73,24 @@ const Doctors = () => {
             }
           >
             <h3 className="text-lg font-bold mb-2 text-gray-800">Categories</h3>
+
             {/* "All Doctors" option */}
             <p
               onClick={() => navigate("/doctors")}
               className={`pl-3 py-2 pr-16 rounded cursor-pointer transition-colors font-medium border border-transparent 
-                ${!speciality ? "bg-primary text-white shadow-md hover:bg-primary-dark" : "hover:bg-gray-100"
+                ${!speciality ? "bg-primary text-white shadow-md hover:brightness-110" : "hover:bg-gray-100"
                 }`}
             >
               All Doctors
             </p>
 
             {/* Specialty Categories */}
-            {categories.map((cat) => (
+            {CATEGORIES.map((cat) => (
               <p
                 key={cat}
                 onClick={() =>
                   speciality === cat
-                    ? navigate("/doctors") // Clicking active specialty deselects
+                    ? navigate("/doctors")
                     : navigate(`/doctors/${cat}`)
                 }
                 className={`pl-3 py-2 pr-16 rounded cursor-pointer transition-colors font-medium border border-transparent 
@@ -123,13 +111,13 @@ const Doctors = () => {
 
           <div className="grid grid-cols-2 md:grid-cols-3 gap-6 lg:gap-8">
 
-            {/* ⭐ Show skeleton while loading */}
+            {/* Show skeleton while loading */}
             {loading &&
               Array(6)
                 .fill(0)
                 .map((_, i) => <SkeletonCard key={i} />)}
 
-            {/* ⭐ Show "No Doctors Found" message */}
+            {/* Show "No Doctors Found" message */}
             {!loading && filterDoc.length === 0 && (
               <div className="col-span-full py-10 text-center bg-gray-50 rounded-xl border border-gray-200">
                 <p className="text-lg font-medium text-gray-600">
@@ -148,8 +136,6 @@ const Doctors = () => {
                   key={item._id}
                   onClick={() => {
                     navigate(`/appointment/${item._id}`);
-                    // Note: window.scrollTo(0, 0) is preferred over just scrollTo(0, 0)
-                    // but often unnecessary as navigation handles scroll.
                   }}
                   className="bg-white border border-[#C9D8FF] rounded-xl overflow-hidden shadow-md hover:shadow-xl cursor-pointer hover:scale-[1.02] transition-all duration-300 ease-in-out"
                 >
@@ -158,23 +144,24 @@ const Doctors = () => {
                     className="w-full h-48 object-cover bg-[#EAEFFF]"
                     src={item.image}
                     alt={item.name}
+                    loading="lazy"
                   />
 
                   <div className="p-4">
                     {/* Availability Status */}
                     <p
-                      className={`flex items-center gap-2 text-sm font-medium mb-1 ${item.available ? "text-green-600" : "text-gray-500"
+                      className={`flex items-center gap-2 text-sm font-medium mb-1 ${item.available ? "text-green-600" : "text-red-500"
                         }`}
                     >
                       <span
-                        className={`w-2 h-2 rounded-full ${item.available ? "bg-green-600" : "bg-gray-500"
+                        className={`w-2 h-2 rounded-full ${item.available ? "bg-green-600" : "bg-red-500"
                           }`}
                       ></span>
                       {item.available ? "Available" : "Not Available"}
                     </p>
 
                     <p className="text-xl font-bold text-gray-800 truncate">{item.name}</p>
-                    <p className="text-sm text-primary font-semibold mt-0.5">{item.speciality}</p>
+                  <p className="text-sm text-primary font-semibold mt-0.5">{item.speciality}</p>
 
                     <div className="mt-3 flex justify-between items-center border-t pt-2">
                       {/* Fees */}

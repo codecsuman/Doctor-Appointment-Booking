@@ -1,36 +1,60 @@
 import express from "express";
+
 import {
-    loginAdmin,
-    appointmentsAdmin,
-    appointmentCancel,
-    addDoctor,
-    allDoctors,
-    adminDashboard
+  loginAdmin,
+  appointmentsAdmin,
+  appointmentCancel,
+  addDoctor,
+  allDoctors,
+  adminDashboard,
 } from "../controllers/adminController.js";
 
 import { changeAvailablity } from "../controllers/doctorController.js";
+
 import authAdmin from "../middleware/authAdmin.js";
 import upload from "../middleware/multer.js";
 
 const adminRouter = express.Router();
 
-// Admin Login
+// ==============================
+// Public Routes
+// ==============================
 adminRouter.post("/login", loginAdmin);
 
-// Add Doctor
-adminRouter.post("/add-doctor", authAdmin, upload.single("image"), addDoctor);
-
-// Appointments Management
-adminRouter.get("/appointments", authAdmin, appointmentsAdmin);
-adminRouter.post("/cancel-appointment", authAdmin, appointmentCancel);
-
-// Doctors List
-adminRouter.get("/all-doctors", authAdmin, allDoctors);
-
-// Change Doctor Availability
-adminRouter.post("/change-availability", authAdmin, changeAvailablity);
+// ==============================
+// Protected Routes
+// ==============================
 
 // Dashboard
 adminRouter.get("/dashboard", authAdmin, adminDashboard);
+
+// Doctor Management
+adminRouter.post(
+  "/add-doctor",
+  authAdmin,
+  upload.single("image"),
+  addDoctor
+);
+
+adminRouter.get("/all-doctors", authAdmin, allDoctors);
+
+adminRouter.post(
+  "/change-availability",
+  authAdmin,
+  changeAvailablity
+);
+
+// Appointment Management
+adminRouter.get(
+  "/appointments",
+  authAdmin,
+  appointmentsAdmin
+);
+
+adminRouter.post(
+  "/cancel-appointment",
+  authAdmin,
+  appointmentCancel
+);
 
 export default adminRouter;

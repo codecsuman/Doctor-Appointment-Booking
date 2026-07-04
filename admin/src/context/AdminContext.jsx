@@ -1,155 +1,189 @@
-import { createContext, useState, useCallback, useMemo } from "react";
+import { createContext, useState, useCallback, useMemo, useEffect } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 
-// 1. Export the context
 export const AdminContext = createContext();
 
 const AdminContextProvider = ({ children }) => {
-    // Environment variable setup (already good)
+
     const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
-    // 2. State Management (already good)
     const [aToken, setAToken] = useState(localStorage.getItem("aToken") || "");
     const [appointments, setAppointments] = useState([]);
     const [doctors, setDoctors] = useState([]);
     const [dashData, setDashData] = useState(null);
-    const [isLoading, setIsLoading] = useState(false); // New: Loading state for UX
+    const [isLoading, setIsLoading] = useState(false);
 
-    // 3. Memoize headers (more efficient)
-    const headers = useMemo(() => ({ aToken }), [aToken]);
+    // Sync aToken with localStorage
+    useEffect(() => {
+        if (aToken) {
+            localStorage.setItem("aToken", aToken);
+        } else {
+            localStorage.removeItem("aToken");
+        }
+    }, [aToken]);
 
-    // 4. Centralized Error Handler (structural cleanup)
-    const handleApiError = (e, customMessage) => {
-        // Log the error for debugging (good practice)
-        console.error("API Error:", e);
+    // Clear data on logout
+    useEffect(() => {
+        if (!aToken) {
+            setDoctors([]);
+            setAppointments([]);
+            setDashData(null);
+        }
+    }, [aToken]);
 
-        // Use the server-provided message if available, otherwise use a fallback
-        const message = e.response?.data?.message || customMessage || "An unknown error occurred.";
+    // Axios Instance
+    const axiosInstance = useMemo(() => {
+        return axios.create({
+            baseURL: backendUrl,
+            timeout: 10000,
+            headers: {
+                "Content-Type": "application/json",
+            },
+        });
+    }, [backendUrl]);
 
-        toast.error(message);
+    // Automatically attach Admin Token
+    useEffect(() => {
+        const interceptor = axiosInstance.interceptors.request.use((config) => {
+            if (aToken) {
+                config.headers.atoken = aToken;
+            }
+            return config;
+        });
+
+        return () => {
+            axiosInstance.interceptors.request.eject(interceptor);
+        };
+    }, [axiosInstance, aToken]);
+
+    const handleApiError = (e, message) => {
+        console.error(e);
+        toast.error(e.response?.data?.message || message || "Something went wrong");
     };
 
-    /* --- API CALLS: Wrapped in useCallback for performance and dependency control --- */
-
-    // 5. Fetch Doctors (added loading state)
     const getAllDoctors = useCallback(async () => {
         if (!aToken) return;
+
         setIsLoading(true);
+
         try {
-            const { data } = await axios.get(
-                `${backendUrl}/api/admin/all-doctors`,
-                { headers }
-            );
-            if (data.success) setDoctors(data.doctors);
+            const { data } = await axiosInstance.get("/admin/all-doctors");
+
+            if (data.success) {
+                setDoctors(data.doctors);
+            }
         } catch (e) {
-            handleApiError(e, "Failed to fetch doctor list.");
+            handleApiError(e, "Failed to fetch doctors");
         } finally {
             setIsLoading(false);
         }
-    }, [backendUrl, headers, aToken]);
 
-    // 6. Change Doctor Availability
+    }, [axiosInstance, aToken]);
+
     const changeAvailability = useCallback(async (docId) => {
-        setIsLoading(true);
+
         try {
-            const { data } = await axios.post(
-                `${backendUrl}/api/admin/change-availability`,
-                { docId },
-                { headers }
+            const { data } = await axiosInstance.post(
+                "/admin/change-availability",
+                { docId }
             );
+
             if (data.success) {
                 toast.success(data.message);
-                // Call the memoized function to refresh data
                 getAllDoctors();
             }
-        } catch (e) {
-            handleApiError(e, "Failed to change doctor availability.");
-        } finally {
-            setIsLoading(false);
-        }
-    }, [backendUrl, headers, getAllDoctors]);
 
-    // 7. Fetch All Appointments
+        } catch (e) {
+            handleApiError(e, "Failed to change availability");
+        }
+
+    }, [axiosInstance, getAllDoctors]);
+
     const getAllAppointments = useCallback(async () => {
+
         if (!aToken) return;
+
         setIsLoading(true);
+
         try {
-            const { data } = await axios.get(
-                `${backendUrl}/api/admin/appointments`,
-                { headers }
-            );
-            // Reverse locally if needed, or better, handle sorting on the backend
-            if (data.success) setAppointments(data.appointments.reverse());
+            const { data } = await axiosInstance.get("/admin/appointments");
+
+            if (data.success) {
+                setAppointments([...data.appointments].reverse());
+            }
+
         } catch (e) {
-            handleApiError(e, "Failed to fetch appointments.");
+            handleApiError(e, "Failed to load appointments");
         } finally {
             setIsLoading(false);
         }
-    }, [backendUrl, headers, aToken]);
 
-    // 8. Cancel Appointment
-    const cancelAppointment = useCallback(async (id) => {
+    }, [axiosInstance, aToken]);
+
+    const cancelAppointment = useCallback(async (appointmentId) => {
+
         try {
-            const { data } = await axios.post(
-                `${backendUrl}/api/admin/cancel-appointment`,
-                { appointmentId: id },
-                { headers }
+            const { data } = await axiosInstance.post(
+                "/admin/cancel-appointment",
+                { appointmentId }
             );
+
             if (data.success) {
-                toast.success("Appointment successfully cancelled.");
+                toast.success(data.message);
                 getAllAppointments();
             }
-        } catch (e) {
-            handleApiError(e, "Failed to cancel appointment.");
-        }
-    }, [backendUrl, headers, getAllAppointments]);
 
-    // 9. Fetch Dashboard Data
-    const getDashData = useCallback(async () => {
-        if (!aToken) return;
-        setIsLoading(true);
-        try {
-            const { data } = await axios.get(
-                `${backendUrl}/api/admin/dashboard`,
-                { headers }
-            );
-            if (data.success) setDashData(data.dashData);
         } catch (e) {
-            handleApiError(e, "Failed to load dashboard data.");
+            handleApiError(e, "Failed to cancel appointment");
+        }
+
+    }, [axiosInstance, getAllAppointments]);
+
+    const getDashData = useCallback(async () => {
+
+        if (!aToken) return;
+
+        setIsLoading(true);
+
+        try {
+            const { data } = await axiosInstance.get("/admin/dashboard");
+
+            if (data.success) {
+                setDashData(data.dashData);
+            }
+
+        } catch (e) {
+            handleApiError(e, "Failed to load dashboard");
         } finally {
             setIsLoading(false);
         }
-    }, [backendUrl, headers, aToken]);
 
-    // 10. Memoize the provided value for consumers
-    const contextValue = useMemo(() => ({
+    }, [axiosInstance, aToken]);
+
+    const value = {
+        backendUrl,
+
+        axiosInstance,
+
         aToken,
         setAToken,
+
         doctors,
-        getAllDoctors,
-        changeAvailability,
         appointments,
-        getAllAppointments,
         dashData,
-        getDashData,
-        cancelAppointment,
-        isLoading, // Provide loading state to the consumers
-    }), [
-        aToken,
-        doctors,
-        getAllDoctors,
-        changeAvailability,
-        appointments,
-        getAllAppointments,
-        dashData,
-        getDashData,
-        cancelAppointment,
+
         isLoading,
-    ]);
+
+        getAllDoctors,
+        getAllAppointments,
+        getDashData,
+        changeAvailability,
+        cancelAppointment,
+    };
 
     return (
-        <AdminContext.Provider value={contextValue}>
+        <AdminContext.Provider value={value}>
             {children}
         </AdminContext.Provider>
     );

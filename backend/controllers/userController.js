@@ -1,21 +1,19 @@
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import validator from "validator";
+import fs from "fs";
 import userModel from "../models/userModel.js";
 import doctorModel from "../models/doctorModel.js";
 import appointmentModel from "../models/appointmentModel.js";
 import { v2 as cloudinary } from "cloudinary";
-import Stripe from "stripe";
-import Razorpay from "razorpay";
-import crypto from "crypto";
 
-const stripeInstance = new Stripe(process.env.STRIPE_SECRET_KEY);
-const razorpayInstance = new Razorpay({
-    key_id: process.env.RAZORPAY_KEY_ID,
-    key_secret: process.env.RAZORPAY_KEY_SECRET,
-});
+// ================================
+// DUMMY PAYMENT MODE
+// ================================
+// Set to false to use real Razorpay/Stripe (requires .env keys)
+// Set to true for instant dummy payments (demo/testing)
+const DUMMY_PAYMENT = true;
 
-// Register user
 const registerUser = async (req, res) => {
     try {
         const { name, email, password } = req.body;
@@ -52,7 +50,6 @@ const registerUser = async (req, res) => {
     }
 };
 
-// Login user
 const loginUser = async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -74,7 +71,6 @@ const loginUser = async (req, res) => {
     }
 };
 
-// Get profile (uses req.userId from auth middleware)
 const getProfile = async (req, res) => {
     try {
         const userId = req.userId;
@@ -88,55 +84,81 @@ const getProfile = async (req, res) => {
     }
 };
 
-// Update profile (multipart/form-data, optional image)
 const updateProfile = async (req, res) => {
     try {
         const userId = req.userId;
         if (!userId) return res.json({ success: false, message: "Unauthorized" });
 
-        // Fields from form-data (address might be a JSON string)
-        let { name, phone, address, dob, gender } = req.body;
+        const { name, phone, address, dob, gender } = req.body;
 
-        if (!name || !phone || !dob || !gender) {
-            return res.json({ success: false, message: "Data Missing" });
+        if (!name || !name.trim()) {
+            return res.json({ success: false, message: "Name is required" });
         }
 
-        // Parse address safely (client sends JSON string)
-        if (typeof address === "string") {
-            try {
-                address = JSON.parse(address);
-            } catch (err) {
-                address = { line1: "", line2: "" };
+        const updateData = { name: name.trim() };
+
+        if (phone !== undefined) updateData.phone = phone;
+        if (dob !== undefined) updateData.dob = dob;
+
+        if (gender !== undefined) {
+            const allowedGenders = ["Male", "Female", "Other", "Not Selected"];
+            if (!allowedGenders.includes(gender)) {
+                return res.json({ success: false, message: "Invalid gender value" });
             }
-        } else if (!address) {
-            address = { line1: "", line2: "" };
+            updateData.gender = gender;
         }
 
-        // Update basic fields
-        await userModel.findByIdAndUpdate(userId, {
-            name,
-            phone,
-            address,
-            dob,
-            gender,
-        });
+        if (address !== undefined) {
+            let parsedAddress;
+            if (typeof address === "string") {
+                try {
+                    parsedAddress = JSON.parse(address);
+                } catch (err) {
+                    parsedAddress = { line1: "", line2: "" };
+                }
+            } else {
+                parsedAddress = address;
+            }
+            updateData.address = parsedAddress;
+        }
 
-        // If image uploaded, upload to Cloudinary and update
         if (req.file) {
-            const imageUpload = await cloudinary.uploader.upload(req.file.path, { resource_type: "image" });
-            if (imageUpload?.secure_url) {
-                await userModel.findByIdAndUpdate(userId, { image: imageUpload.secure_url });
+            try {
+                const imageUpload = await cloudinary.uploader.upload(req.file.path, {
+                    resource_type: "image",
+                });
+                if (imageUpload?.secure_url) {
+                    updateData.image = imageUpload.secure_url;
+                }
+            } finally {
+                fs.unlink(req.file.path, (err) => {
+                    if (err) console.error("Temp file cleanup failed:", err.message);
+                });
             }
         }
 
-        return res.json({ success: true, message: "Profile Updated" });
+        const updatedUser = await userModel
+            .findByIdAndUpdate(userId, updateData, {
+                new: true,
+                runValidators: true,
+            })
+            .select("-password");
+
+        if (!updatedUser) {
+            return res.json({ success: false, message: "User not found" });
+        }
+
+        return res.json({
+            success: true,
+            message: "Profile Updated",
+            userData: updatedUser,
+        });
     } catch (error) {
         console.error("updateProfile:", error);
         return res.json({ success: false, message: error.message });
     }
 };
 
-// Book appointment
 const bookAppointment = async (req, res) => {
     try {
         const userId = req.userId;
@@ -151,22 +173,17 @@ const bookAppointment = async (req, res) => {
         if (!docData) return res.json({ success: false, message: "Doctor not found" });
         if (!docData.available) return res.json({ success: false, message: "Doctor Not Available" });
 
-        // ensure slots_booked exists
         const slots_booked = docData.slots_booked || {};
 
-        // check availability
         if (slots_booked[slotDate] && slots_booked[slotDate].includes(slotTime)) {
             return res.json({ success: false, message: "Slot Not Available" });
         }
 
-        // add slot
         if (!slots_booked[slotDate]) slots_booked[slotDate] = [];
         slots_booked[slotDate].push(slotTime);
 
-        // get user data
         const userData = await userModel.findById(userId).select("-password");
 
-        // prepare docData snapshot to store in appointment (avoid storing slots_booked)
         const docSnapshot = docData.toObject();
         delete docSnapshot.slots_booked;
         delete docSnapshot.password;
@@ -185,7 +202,6 @@ const bookAppointment = async (req, res) => {
         const newAppointment = new appointmentModel(appointmentData);
         await newAppointment.save();
 
-        // update doctor's booked slots
         await doctorModel.findByIdAndUpdate(docId, { slots_booked });
 
         return res.json({ success: true, message: "Appointment Booked" });
@@ -195,7 +211,6 @@ const bookAppointment = async (req, res) => {
     }
 };
 
-// Cancel appointment
 const cancelAppointment = async (req, res) => {
     try {
         const userId = req.userId;
@@ -211,10 +226,8 @@ const cancelAppointment = async (req, res) => {
             return res.json({ success: false, message: "Unauthorized action" });
         }
 
-        // mark cancelled
         await appointmentModel.findByIdAndUpdate(appointmentId, { cancelled: true });
 
-        // release slot in doctor's record
         const { docId, slotDate, slotTime } = appointmentData;
         const doctorData = await doctorModel.findById(docId);
         if (doctorData) {
@@ -230,7 +243,6 @@ const cancelAppointment = async (req, res) => {
     }
 };
 
-// List user appointments
 const listAppointment = async (req, res) => {
     try {
         const userId = req.userId;
@@ -244,7 +256,9 @@ const listAppointment = async (req, res) => {
     }
 };
 
-// Razorpay: create order
+// ================================
+// DUMMY RAZORPAY PAYMENT
+// ================================
 const paymentRazorpay = async (req, res) => {
     try {
         const { appointmentId } = req.body;
@@ -254,6 +268,19 @@ const paymentRazorpay = async (req, res) => {
         if (!appointmentData || appointmentData.cancelled) {
             return res.json({ success: false, message: "Appointment Cancelled or not found" });
         }
+
+        if (DUMMY_PAYMENT) {
+            // Dummy mode: instantly mark as paid
+            await appointmentModel.findByIdAndUpdate(appointmentId, { payment: true });
+            return res.json({ success: true, message: "Payment Successful" });
+        }
+
+        // Real Razorpay mode (requires .env keys)
+        const { default: Razorpay } = await import("razorpay");
+        const razorpayInstance = new Razorpay({
+            key_id: process.env.RAZORPAY_KEY_ID,
+            key_secret: process.env.RAZORPAY_KEY_SECRET,
+        });
 
         const options = {
             amount: appointmentData.amount * 100,
@@ -269,14 +296,30 @@ const paymentRazorpay = async (req, res) => {
     }
 };
 
-// Razorpay: verify payment (expects razorpay_order_id, razorpay_payment_id, razorpay_signature)
+// ================================
+// DUMMY RAZORPAY VERIFY
+// ================================
 const verifyRazorpay = async (req, res) => {
     try {
-        const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+        const { razorpay_order_id } = req.body;
+
+        if (DUMMY_PAYMENT) {
+            // Dummy mode: extract appointmentId from order_id and mark paid
+            const appointmentId = razorpay_order_id || req.body.appointmentId;
+            if (!appointmentId) {
+                return res.json({ success: false, message: "Missing appointmentId" });
+            }
+            await appointmentModel.findByIdAndUpdate(appointmentId, { payment: true });
+            return res.json({ success: true, message: "Payment Successful" });
+        }
+
+        // Real Razorpay verification
+        const { razorpay_payment_id, razorpay_signature } = req.body;
         if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
             return res.json({ success: false, message: "Missing razorpay fields" });
         }
 
+        const crypto = await import("crypto");
         const body = razorpay_order_id + "|" + razorpay_payment_id;
         const expectedSignature = crypto
             .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
@@ -284,7 +327,6 @@ const verifyRazorpay = async (req, res) => {
             .digest("hex");
 
         if (expectedSignature === razorpay_signature) {
-            // receipt contains appointmentId
             const appointmentId = razorpay_order_id;
             await appointmentModel.findByIdAndUpdate(appointmentId, { payment: true });
             return res.json({ success: true, message: "Payment Successful" });
@@ -297,7 +339,9 @@ const verifyRazorpay = async (req, res) => {
     }
 };
 
-// Stripe: create checkout session
+// ================================
+// DUMMY STRIPE PAYMENT
+// ================================
 const paymentStripe = async (req, res) => {
     try {
         const { appointmentId } = req.body;
@@ -307,6 +351,16 @@ const paymentStripe = async (req, res) => {
         if (!appointmentData || appointmentData.cancelled) {
             return res.json({ success: false, message: "Appointment Cancelled or not found" });
         }
+
+        if (DUMMY_PAYMENT) {
+            // Dummy mode: instantly mark as paid
+            await appointmentModel.findByIdAndUpdate(appointmentId, { payment: true });
+            return res.json({ success: true, message: "Payment Successful" });
+        }
+
+        // Real Stripe mode (requires .env keys)
+        const { default: Stripe } = await import("stripe");
+        const stripeInstance = new Stripe(process.env.STRIPE_SECRET_KEY);
 
         const origin = req.headers.origin || process.env.FRONTEND_URL || "http://localhost:5173";
         const currency = (process.env.CURRENCY || "INR").toLowerCase();
@@ -335,10 +389,22 @@ const paymentStripe = async (req, res) => {
     }
 };
 
-// Stripe verify (frontend redirects to /verify, backend is called to set payment)
+// ================================
+// DUMMY STRIPE VERIFY
+// ================================
 const verifyStripe = async (req, res) => {
     try {
         const { appointmentId, success } = req.body;
+
+        if (DUMMY_PAYMENT) {
+            // Dummy mode: instantly mark as paid regardless of success param
+            if (appointmentId) {
+                await appointmentModel.findByIdAndUpdate(appointmentId, { payment: true });
+            }
+            return res.json({ success: true, message: "Payment Successful" });
+        }
+
+        // Real Stripe mode
         if (success === "true" || success === true) {
             await appointmentModel.findByIdAndUpdate(appointmentId, { payment: true });
             return res.json({ success: true, message: "Payment Successful" });

@@ -1,6 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
 import { AppContext } from "../context/AppContext";
-import axios from "axios";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 
@@ -9,144 +8,168 @@ const Login = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
-  const { backendUrl, token, setToken } = useContext(AppContext);
 
-  const onSubmitHandler = async (event) => {
-    event.preventDefault();
+  const {
+    token,
+    setToken,
+    userData,
+    axiosInstance,
+    loadUserProfile,
+  } = useContext(AppContext);
+
+  const onSubmitHandler = async (e) => {
+    e.preventDefault();
+
+    if (loading) return;
 
     try {
+      setLoading(true);
+
       const endpoint =
         state === "Sign Up"
-          ? "/api/user/register"
-          : "/api/user/login";
+          ? "/user/register"
+          : "/user/login";
 
       const body =
         state === "Sign Up"
-          ? { name, email, password }
-          : { email, password };
+          ? {
+              name,
+              email,
+              password,
+            }
+          : {
+              email,
+              password,
+            };
 
-      const { data } = await axios.post(backendUrl + endpoint, body);
+      const { data } = await axiosInstance.post(
+        endpoint,
+        body
+      );
 
-      if (data.success) {
-        localStorage.setItem("token", data.token);
-        setToken(data.token);
-        toast.success(
-          state === "Sign Up"
-            ? "Account created successfully! Redirecting..."
-            : "Login successful! Redirecting..."
-        );
-      } else {
+      if (!data.success) {
         toast.error(data.message);
+        return;
       }
+
+      localStorage.setItem("token", data.token);
+      setToken(data.token);
+
+      await loadUserProfile();
+
+      toast.success(
+        state === "Sign Up"
+          ? "Account created successfully."
+          : "Login successful."
+      );
+
+      navigate("/");
     } catch (error) {
-      toast.error(error.response?.data?.message || error.message);
+      console.error(error);
+
+      toast.error(
+        error.response?.data?.message ||
+          "Something went wrong."
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    if (token) navigate("/");
-  }, [token, navigate]);
+    if (token && userData) {
+      navigate("/");
+    }
+  }, [token, userData, navigate]);
 
   return (
-    // 1. Goo Level Background: Ensures the form is centered on a full-height, slightly colored background for visual appeal.
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
       <form
         onSubmit={onSubmitHandler}
-        className="w-full max-w-md"
+        className="bg-white shadow-xl rounded-2xl p-8 w-full max-w-md"
       >
-        {/* 2. Enhanced Card Styling: Added better padding, darker border, and a deeper shadow for a premium feel. */}
-        <div className="flex flex-col gap-5 m-auto items-center p-8 sm:p-10 bg-white border border-gray-200 rounded-2xl text-gray-700 text-base shadow-2xl transition-all duration-500 hover:shadow-primary/20">
+        <h1 className="text-3xl font-bold mb-2">
+          {state === "Sign Up"
+            ? "Create Account"
+            : "Login"}
+        </h1>
 
-          {/* Header/Title */}
-          <p className="text-3xl font-extrabold text-gray-900 mb-2 w-full text-left">
-            {state === "Sign Up" ? "Create Account" : "Welcome Back"}
-          </p>
-          <p className="text-sm text-gray-500 w-full text-left">
-            Please {state === "Sign Up" ? "sign up" : "log in"} to book your appointment.
-          </p>
+        <p className="text-gray-500 mb-6">
+          {state === "Sign Up"
+            ? "Create your account to continue."
+            : "Welcome back."}
+        </p>
 
-          {/* Full Name Input (Only visible for Sign Up) */}
-          {state === "Sign Up" && (
-            <div className="w-full">
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-              <input
-                id="name"
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary transition duration-200"
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="John Doe"
-                required
-              />
-            </div>
-          )}
+        {state === "Sign Up" && (
+          <input
+            className="w-full border rounded-lg p-3 mb-4"
+            placeholder="Full Name"
+            value={name}
+            onChange={(e) =>
+              setName(e.target.value)
+            }
+            required
+          />
+        )}
 
-          {/* Email Input */}
-          <div className="w-full">
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-            <input
-              id="email"
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary transition duration-200"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
-              required
-            />
-          </div>
+        <input
+          className="w-full border rounded-lg p-3 mb-4"
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) =>
+            setEmail(e.target.value)
+          }
+          required
+        />
 
-          {/* Password Input */}
-          <div className="w-full">
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-            <input
-              id="password"
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary transition duration-200"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              required
-            />
-          </div>
+        <input
+          className="w-full border rounded-lg p-3 mb-6"
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) =>
+            setPassword(e.target.value)
+          }
+          required
+          minLength={8}
+        />
 
-          {/* 3. Enhanced CTA Button: Strong hover and active effects */}
-          <button
-            type="submit"
-            className="bg-primary text-white w-full py-3 mt-3 rounded-xl text-lg font-bold shadow-lg shadow-primary/30 
-                       hover:bg-primary-dark hover:shadow-xl hover:scale-[1.01] active:scale-[0.99] 
-                       transition-all duration-300 ease-in-out"
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg disabled:opacity-50"
+        >
+          {loading
+            ? "Please wait..."
+            : state === "Sign Up"
+            ? "Create Account"
+            : "Login"}
+        </button>
+
+        <p className="text-center mt-5">
+          {state === "Sign Up"
+            ? "Already have an account?"
+            : "Don't have an account?"}
+
+          <span
+            onClick={() =>
+              setState(
+                state === "Sign Up"
+                  ? "Login"
+                  : "Sign Up"
+              )
+            }
+            className="text-blue-600 font-semibold cursor-pointer ml-2"
           >
-            {state === "Sign Up" ? "Create Account" : "Login Securely"}
-          </button>
-
-          {/* Footer Text */}
-          <p className="text-sm text-gray-500 mt-2">
-            {state === "Sign Up" ? (
-              <>
-                Already have an account?{" "}
-                <span
-                  onClick={() => setState("Login")}
-                  className="text-primary font-bold cursor-pointer hover:underline transition-colors"
-                >
-                  Login here
-                </span>
-              </>
-            ) : (
-              <>
-                Don't have an account?{" "}
-                <span
-                  onClick={() => setState("Sign Up")}
-                  className="text-primary font-bold cursor-pointer hover:underline transition-colors"
-                >
-                  Sign Up
-                </span>
-              </>
-            )}
-          </p>
-
-        </div>
+            {state === "Sign Up"
+              ? "Login"
+              : "Sign Up"}
+          </span>
+        </p>
       </form>
     </div>
   );

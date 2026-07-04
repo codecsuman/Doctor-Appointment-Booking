@@ -5,56 +5,51 @@ import { AdminContext } from "../context/AdminContext";
 import { DoctorContext } from "../context/DoctorContext";
 
 const Login = () => {
-  // State to toggle between Admin and Doctor login
   const [state, setState] = useState("Admin");
-
-  // State for form inputs
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  // Get backend URL from environment variables
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
-  // Context functions to set tokens globally
   const { setAToken } = useContext(AdminContext);
   const { setDToken } = useContext(DoctorContext);
 
-  /**
-   * Handles the form submission, performs the login API call,
-   * and stores the authentication token.
-   */
   const onSubmitHandler = async (e) => {
     e.preventDefault();
 
     try {
-      // Determine the correct API endpoint based on the current state (Admin or Doctor)
-      let url =
+      // backendUrl already ends with /api
+      const url =
         state === "Admin"
-          ? "/api/admin/login"
-          : "/api/doctor/login";
+          ? `${backendUrl}/admin/login`
+          : `${backendUrl}/doctor/login`;
 
-      // API call to the backend
-      const { data } = await axios.post(
-        backendUrl + url,
-        { email, password }
-      );
+      const { data } = await axios.post(url, {
+        email,
+        password,
+      });
 
-      // Check for backend-reported failure
-      if (!data.success) return toast.error(data.message);
+      if (data.success) {
+        if (state === "Admin") {
+          setAToken(data.token);
+          localStorage.setItem("aToken", data.token);
+        } else {
+          setDToken(data.token);
+          localStorage.setItem("dToken", data.token);
+        }
 
-      // If successful, set the token in context and local storage
-      if (state === "Admin") {
-        setAToken(data.token);
-        localStorage.setItem("aToken", data.token);
+        toast.success(`${state} Login Successful`);
       } else {
-        setDToken(data.token);
-        localStorage.setItem("dToken", data.token);
+        toast.error(data.message);
       }
+    } catch (error) {
+      console.error(error);
 
-      toast.success(`Login successful as ${state}!`);
-    } catch (err) {
-      // Handle network or request errors
-      toast.error(err.message || "An unexpected error occurred during login.");
+      toast.error(
+        error.response?.data?.message ||
+          error.message ||
+          "Network Error"
+      );
     }
   };
 
@@ -62,78 +57,72 @@ const Login = () => {
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <form
         onSubmit={onSubmitHandler}
-        className="bg-white px-8 py-8 rounded-xl shadow-2xl w-full max-w-sm"
+        className="bg-white p-8 rounded-xl shadow-lg w-[380px]"
       >
-        <h2 className="text-3xl font-extrabold text-center mb-6 text-gray-800">
-          {state}{" "}
-          <span className="text-primary font-light">Login</span>
-        </h2>
+        <h1 className="text-3xl font-bold text-center mb-6">
+          {state} <span className="text-primary font-normal">Login</span>
+        </h1>
 
-        {/* Email Input */}
         <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+          <label className="text-sm font-medium">Email</label>
+
           <input
             type="email"
-            className="border border-gray-300 p-3 rounded-lg w-full focus:ring-primary focus:border-primary transition"
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            className="border w-full p-3 rounded-lg mt-1"
           />
         </div>
 
-        {/* Password Input */}
         <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+          <label className="text-sm font-medium">Password</label>
+
           <input
             type="password"
-            className="border border-gray-300 p-3 rounded-lg w-full focus:ring-primary focus:border-primary transition"
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            className="border w-full p-3 rounded-lg mt-1"
           />
         </div>
 
-        {/* Submit Button */}
         <button
+          className="w-full bg-primary text-white py-3 rounded-lg text-lg font-semibold"
           type="submit"
-          className="w-full bg-blue-600 text-white py-3 rounded-lg mt-2 text-lg font-semibold 
-                     hover:bg-blue-700 transition duration-300 shadow-md"
         >
-          Log In
+          Login
         </button>
 
-        {/* Toggle Login State */}
-        <p className="mt-6 text-center text-gray-600 text-sm">
-          {state === "Admin" ? (
-            <>
-              Logging in as a Doctor?{" "}
-              <span
-                className="text-blue-600 font-medium cursor-pointer underline hover:text-blue-800 transition"
-                onClick={() => {
-                  setState("Doctor");
-                  setEmail("");
-                  setPassword("");
-                }}
-              >
-                Click here
-              </span>
-            </>
-          ) : (
-            <>
-              Logging in as an Admin?{" "}
-              <span
-                className="text-blue-600 font-medium cursor-pointer underline hover:text-blue-800 transition"
-                onClick={() => {
-                  setState("Admin");
-                  setEmail("");
-                  setPassword("");
-                }}
-              >
-                Click here
-              </span>
-            </>
-          )}
-        </p>
+        {state === "Admin" ? (
+          <p className="text-center mt-5">
+            Login as Doctor?{" "}
+            <span
+              className="text-primary cursor-pointer"
+              onClick={() => {
+                setState("Doctor");
+                setEmail("");
+                setPassword("");
+              }}
+            >
+              Click Here
+            </span>
+          </p>
+        ) : (
+          <p className="text-center mt-5">
+            Login as Admin?{" "}
+            <span
+              className="text-primary cursor-pointer"
+              onClick={() => {
+                setState("Admin");
+                setEmail("");
+                setPassword("");
+              }}
+            >
+              Click Here
+            </span>
+          </p>
+        )}
       </form>
     </div>
   );
