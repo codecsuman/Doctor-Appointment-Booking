@@ -1,9 +1,8 @@
-<<<<<<< HEAD
+
 <div align="center">
-=======
-<<<<<<< HEAD
+
 # 🏥 Full-Stack Doctor Appointment Booking System (MERN Stack)
->>>>>>> 7a183af (Update project)
+
 
 <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=700&size=32&duration=3000&pause=800&color=3B82F6&center=true&vCenter=true&width=800&lines=%F0%9F%8F%A5+Doctor+Appointment+Booking+System;Full-Stack+MERN+Healthcare+Platform;Book+%E2%80%A2+Manage+%E2%80%A2+Consult+%E2%80%A2+Heal" alt="Typing SVG" />
 
