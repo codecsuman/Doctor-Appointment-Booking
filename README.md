@@ -43,7 +43,10 @@
 <td align="center" width="33%">
 
 ### 🛠 Admin Dashboard
-<a href="doctor-appointment-booking-tx26.vercel.app" target="_blank">
+<td align="center" width="33%">
+
+### 🛠 Admin Dashboard
+<a href="https://doctor-appointment-booking-tx26.vercel.app" target="_blank">
   <img src="https://img.shields.io/badge/Open%20Dashboard-22c55e?style=for-the-badge&logo=vercel&logoColor=white" />
 </a>
 <br /><br />
