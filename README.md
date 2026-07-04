@@ -1,69 +1,43 @@
-<div align="center">
-
-<img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=700&size=32&duration=3000&pause=800&color=3B82F6&center=true&vCenter=true&width=800&lines=%F0%9F%8F%A5+Doctor+Appointment+Booking+System;Full-Stack+MERN+Healthcare+Platform;Book+%E2%80%A2+Manage+%E2%80%A2+Consult+%E2%80%A2+Heal" alt="Typing SVG" />
-
-<br />
-
-![MERN](https://img.shields.io/badge/MERN-Stack-00D9FF?style=for-the-badge&logo=mongodb&logoColor=white)
-![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)
-![Status](https://img.shields.io/badge/Status-Production%20Ready-success?style=for-the-badge)
-![PRs](https://img.shields.io/badge/PRs-Welcome-brightgreen?style=for-the-badge)
-
-<br />
-
-### 🩺 A **production-ready**, full-stack healthcare appointment platform
-*Book doctors instantly • Manage patients seamlessly • Powered by modern web tech*
-
-<br />
-
-```diff
-+ 🚀 Blazing Fast   + 🔒 Secure JWT Auth   + 💳 Stripe & Razorpay   + ☁️ Cloud Native
-```
-
-</div>
-
----
-
-<div align="center">
+&lt;div align="center"&gt;
 
 ## 🌍 Live Deployment
 
-<table>
-<tr>
-<td align="center" width="33%">
+&lt;table&gt;
+&lt;tr&gt;
+&lt;td align="center" width="33%"&gt;
 
 ### 👤 User Portal
-<a href="https://doctor-appointment-booking-roan.vercel.app/" target="_blank">
-  <img src="https://img.shields.io/badge/Visit%20Website-3b82f6?style=for-the-badge&logo=vercel&logoColor=white" />
-</a>
-<br /><br />
-<sub>Book appointments,<br />manage profile</sub>
+&lt;a href="https://doctor-appointment-booking-roan.vercel.app/" target="_blank"&gt;
+  &lt;img src="https://img.shields.io/badge/Visit%20Website-3b82f6?style=for-the-badge&logo=vercel&logoColor=white" /&gt;
+&lt;/a&gt;
+&lt;br /&gt;&lt;br /&gt;
+&lt;sub&gt;Book appointments,&lt;br /&gt;manage profile&lt;/sub&gt;
 
-</td>
-<td align="center" width="33%">
+&lt;/td&gt;
+&lt;td align="center" width="33%"&gt;
 
 ### 🛠 Admin Dashboard
-<a href="doctor-appointment-booking-tx26-git-main-codecsumans-projects.vercel.app" target="_blank">
-  <img src="https://img.shields.io/badge/Open%20Dashboard-22c55e?style=for-the-badge&logo=vercel&logoColor=white" />
-</a>
-<br /><br />
-<sub>Manage doctors,<br />view analytics</sub>
+&lt;a href="https://doctor-appointment-booking-tx26-git-main-codecsumans-projects.vercel.app" target="_blank"&gt;
+  &lt;img src="https://img.shields.io/badge/Open%20Dashboard-22c55e?style=for-the-badge&logo=vercel&logoColor=white" /&gt;
+&lt;/a&gt;
+&lt;br /&gt;&lt;br /&gt;
+&lt;sub&gt;Manage doctors,&lt;br /&gt;view analytics&lt;/sub&gt;
 
-</td>
-<td align="center" width="33%">
+&lt;/td&gt;
+&lt;td align="center" width="33%"&gt;
 
 ### ⚡ Backend API
-<a href="https://your-render-backend-url.onrender.com" target="_blank">
-  <img src="https://img.shields.io/badge/API%20Endpoint-a855f7?style=for-the-badge&logo=render&logoColor=white" />
-</a>
-<br /><br />
-<sub>REST API powered<br />by Node & Express</sub>
+&lt;a href="https://your-render-backend-url.onrender.com" target="_blank"&gt;
+  &lt;img src="https://img.shields.io/badge/API%20Endpoint-a855f7?style=for-the-badge&logo=render&logoColor=white" /&gt;
+&lt;/a&gt;
+&lt;br /&gt;&lt;br /&gt;
+&lt;sub&gt;REST API powered&lt;br /&gt;by Node & Express&lt;/sub&gt;
 
-</td>
-</tr>
-</table>
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
 
-</div>
+&lt;/div&gt;
 
 ---
 
