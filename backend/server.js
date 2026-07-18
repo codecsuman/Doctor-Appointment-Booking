@@ -42,37 +42,26 @@ const allowedOrigins = [
 app.use(
   cors({
     origin(origin, callback) {
-      if (!origin) return callback(null, true);
-<<<<<<< HEAD
-      if (allowedOrigins.includes(origin)) {
+      // Allow requests without origin (Postman, mobile apps, etc.)
+      if (!origin) {
         return callback(null, true);
       }
-=======
 
       // Allow explicitly listed origins
       if (allowedOrigins.includes(origin)) {
         return callback(null, true);
       }
 
-      // Allow any Vercel deployment (preview URLs change every deploy)
+      // Allow all Vercel preview/production deployments
       if (origin.endsWith(".vercel.app")) {
         return callback(null, true);
       }
 
->>>>>>> 7a183af (Update project)
       console.error(`❌ Blocked by CORS: ${origin}`);
       return callback(new Error("Not allowed by CORS"));
     },
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-<<<<<<< HEAD
-  })
-);
-
-// Handle preflight requests for all routes
-app.options("*", cors());
-
-=======
     allowedHeaders: [
       "Content-Type",
       "Authorization",
@@ -80,10 +69,12 @@ app.options("*", cors());
       "aToken",
       "dToken",
     ],
-  })
+  }),
 );
 
->>>>>>> 7a183af (Update project)
+// Handle preflight requests
+app.options("*", cors());
+
 // ================================
 // Routes
 // ================================
