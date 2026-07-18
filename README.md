@@ -1,8 +1,12 @@
+<<<<<<< HEAD
 
 <div align="center">
 
 # 🏥 Full-Stack Doctor Appointment Booking System (MERN Stack)
 
+=======
+<div align="center">
+>>>>>>> 3e847fc (Replace corrupted README with clean version)
 
 <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=700&size=32&duration=3000&pause=800&color=3B82F6&center=true&vCenter=true&width=800&lines=%F0%9F%8F%A5+Doctor+Appointment+Booking+System;Full-Stack+MERN+Healthcare+Platform;Book+%E2%80%A2+Manage+%E2%80%A2+Consult+%E2%80%A2+Heal" alt="Typing SVG" />
 
@@ -54,8 +58,6 @@
 <sub>Manage doctors,<br />view analytics</sub>
 
 </td>
-
-
 <td align="center" width="33%">
 
 ### ⚡ Backend API
@@ -280,7 +282,6 @@ Built with the **MERN stack** (MongoDB, Express, React, Node.js), enhanced with 
 <details>
 <summary><b>🔵 Backend</b> — <code>backend/.env</code></summary>
 
-<<<<<<< HEAD
 ```env
 PORT=4000
 MONGODB_URI=your_mongodb_uri
@@ -293,106 +294,12 @@ JWT_SECRET=your_jwt_secret
 STRIPE_SECRET_KEY=your_stripe_key
 RAZORPAY_KEY_ID=your_razorpay_id
 RAZORPAY_KEY_SECRET=your_razorpay_secret
-FRONTEND_URL=https://full-stack-doctor-appointment-booki.vercel.app
-ADMIN_URL=https://full-stack-doctor-appointment-booki-eight.vercel.app
+FRONTEND_URL=https://doctor-appointment-booking-roan.vercel.app
+ADMIN_URL=https://doctor-appointment-booking-tx26.vercel.app
 ```
-=======
-### 🔵 Backend (`.env`)
-=======
-<div align="center">
-
-<img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=700&size=32&duration=3000&pause=800&color=3B82F6&center=true&vCenter=true&width=800&lines=%F0%9F%8F%A5+Doctor+Appointment+Booking+System;Full-Stack+MERN+Healthcare+Platform;Book+%E2%80%A2+Manage+%E2%80%A2+Consult+%E2%80%A2+Heal" alt="Typing SVG" />
-
-<br />
-
-![MERN](https://img.shields.io/badge/MERN-Stack-00D9FF?style=for-the-badge&logo=mongodb&logoColor=white)
-![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)
-![Status](https://img.shields.io/badge/Status-Production%20Ready-success?style=for-the-badge)
-![PRs](https://img.shields.io/badge/PRs-Welcome-brightgreen?style=for-the-badge)
-
-<br />
-
-### 🩺 A **production-ready**, full-stack healthcare appointment platform
-*Book doctors instantly • Manage patients seamlessly • Powered by modern web tech*
-
-<br />
-
-```diff
-+ 🚀 Blazing Fast   + 🔒 Secure JWT Auth   + 💳 Stripe & Razorpay   + ☁️ Cloud Native
-```
-
-</div>
-
----
-
-<div align="center">
-
-## 🌍 Live Deployment
-
-<table>
-<tr>
-<td align="center" width="33%">
-
-### 👤 User Portal
-<a href="https://full-stack-doctor-appointment-booki.vercel.app" target="_blank">
-  <img src="https://img.shields.io/badge/Visit%20Website-3b82f6?style=for-the-badge&logo=vercel&logoColor=white" />
-</a>
-<br /><br />
-<sub>Book appointments,<br />manage profile</sub>
-
-</td>
-<td align="center" width="33%">
-
-### 🛠 Admin Dashboard
-<a href="https://full-stack-doctor-appointment-booki-eight.vercel.app" target="_blank">
-  <img src="https://img.shields.io/badge/Open%20Dashboard-22c55e?style=for-the-badge&logo=vercel&logoColor=white" />
-</a>
-<br /><br />
-<sub>Manage doctors,<br />view analytics</sub>
-
-</td>
-<td align="center" width="33%">
-
-### ⚡ Backend API
-<a href="https://your-render-backend-url.onrender.com" target="_blank">
-  <img src="https://img.shields.io/badge/API%20Endpoint-a855f7?style=for-the-badge&logo=render&logoColor=white" />
-</a>
-<br /><br />
-<sub>REST API powered<br />by Node & Express</sub>
-
-</td>
-</tr>
-</table>
-
-</div>
-
----
-
-## 📌 Table of Contents
-
-<details>
-<summary>Click to expand</summary>
-
-- [🎯 Overview](#-overview)
-- [✨ Key Features](#-key-features)
-- [🎨 Tech Stack](#-tech-stack)
-- [🏗️ Project Architecture](#️-project-architecture)
-- [📸 Screenshots](#-screenshots)
-- [⚙️ Environment Variables](#️-environment-variables)
-- [🚀 Getting Started](#-getting-started)
-- [📡 API Endpoints](#-api-endpoints)
-- [🚢 Deployment](#-deployment)
-- [🤝 Contributing](#-contributing)
-- [📄 License](#-license)
-- [👨‍💻 Author](#-author)
-
-</details>
->>>>>>> ce990fc (Update project)
->>>>>>> 7a183af (Update project)
 
 </details>
 
-<<<<<<< HEAD
 <details>
 <summary><b>🟣 Frontend</b> — <code>frontend/.env</code></summary>
 
@@ -416,260 +323,8 @@ VITE_BACKEND_URL=https://your-backend.onrender.com
 
 ## 🚀 Getting Started
 
-### 📋 Prerequisites
-=======
-<<<<<<< HEAD
-### 🟣 Frontend (`frontend/.env`) & 🔴 Admin (`admin/.env`)
-
-| Variable | Description |
-| :--- | :--- |
-| `VITE_BACKEND_URL` | The URL where your Node/Express backend is deployed or running locally (e.g., `http://localhost:4000`). |
-=======
-## 🎯 Overview
-
-**Doctor Appointment Booking System** is a complete healthcare management platform where **patients** can discover doctors, book appointments, and manage their medical journey — while **admins** get a powerful dashboard to onboard doctors, monitor bookings, and analyze platform activity.
-
-Built with the **MERN stack** (MongoDB, Express, React, Node.js), enhanced with **Cloudinary** for media, **Stripe & Razorpay** for payments, and deployed on **Vercel + Render**.
-
-> 💡 **Perfect for:** Clinics, hospitals, telemedicine startups, and portfolio projects showcasing full-stack expertise.
-
----
-
-## ✨ Key Features
-
-<div align="center">
-
-### 🧑‍⚕️ Patient Experience
-
-</div>
-
-| Feature | Description |
-| :--- | :--- |
-| 🔐 **Secure Auth** | JWT-based signup / login with encrypted passwords |
-| 🔍 **Doctor Discovery** | Browse doctors across multiple specialties with filters |
-| 📅 **Real-Time Booking** | Check live availability & book slots instantly |
-| 💳 **Online Payments** | Pay via **Stripe** or **Razorpay** (test mode enabled) |
-| 👤 **Profile Management** | Update personal info, upload photo, view history |
-| 📱 **Fully Responsive** | Flawless UX on mobile, tablet, and desktop |
-
-<br />
-
-<div align="center">
-
-### 🛠 Admin Superpowers
-
-</div>
-
-| Feature | Description |
-| :--- | :--- |
-| 🛡 **Protected Routes** | Admin-only access with credential-based JWT |
-| ➕ **Doctor Onboarding** | Add doctors with images, bio, fees, availability |
-| 📊 **Live Dashboard** | Track doctors, patients, and appointment stats |
-| ✅ **Appointment Control** | Cancel or mark appointments as completed |
-| 🖼 **Cloudinary CDN** | All images optimized & served globally |
-| 📈 **Analytics Ready** | Data-rich insights for platform growth |
-
----
-
-## 🎨 Tech Stack
-
-<div align="center">
-
-### 💠 Core Stack
-
-<img src="https://skillicons.dev/icons?i=react,nodejs,express,mongodb,tailwind,vite,vercel,git,github&perline=9" />
-
-<br /><br />
-
-<table>
-<tr>
-  <th>Layer</th>
-  <th>Technology</th>
-  <th>Purpose</th>
-</tr>
-<tr>
-  <td>🎨 <b>Frontend</b></td>
-  <td>
-    <img src="https://img.shields.io/badge/React-20232A?style=flat-square&logo=react&logoColor=61DAFB" />
-    <img src="https://img.shields.io/badge/Vite-646CFF?style=flat-square&logo=vite&logoColor=white" />
-    <img src="https://img.shields.io/badge/TailwindCSS-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white" />
-  </td>
-  <td>Modern, blazing-fast UI</td>
-</tr>
-<tr>
-  <td>⚙️ <b>Backend</b></td>
-  <td>
-    <img src="https://img.shields.io/badge/Node.js-339933?style=flat-square&logo=nodedotjs&logoColor=white" />
-    <img src="https://img.shields.io/badge/Express-000000?style=flat-square&logo=express&logoColor=white" />
-  </td>
-  <td>REST API & business logic</td>
-</tr>
-<tr>
-  <td>🗄 <b>Database</b></td>
-  <td>
-    <img src="https://img.shields.io/badge/MongoDB-47A248?style=flat-square&logo=mongodb&logoColor=white" />
-    <img src="https://img.shields.io/badge/Mongoose-880000?style=flat-square&logo=mongoose&logoColor=white" />
-  </td>
-  <td>Cloud database (Atlas)</td>
-</tr>
-<tr>
-  <td>🔐 <b>Auth</b></td>
-  <td>
-    <img src="https://img.shields.io/badge/JWT-000000?style=flat-square&logo=jsonwebtokens&logoColor=white" />
-    <img src="https://img.shields.io/badge/bcrypt-004488?style=flat-square" />
-  </td>
-  <td>Secure token-based auth</td>
-</tr>
-<tr>
-  <td>☁️ <b>Media</b></td>
-  <td>
-    <img src="https://img.shields.io/badge/Cloudinary-3448C5?style=flat-square&logo=cloudinary&logoColor=white" />
-    <img src="https://img.shields.io/badge/Multer-FF6C37?style=flat-square" />
-  </td>
-  <td>Image upload & CDN</td>
-</tr>
-<tr>
-  <td>💳 <b>Payments</b></td>
-  <td>
-    <img src="https://img.shields.io/badge/Stripe-635BFF?style=flat-square&logo=stripe&logoColor=white" />
-    <img src="https://img.shields.io/badge/Razorpay-02042B?style=flat-square&logo=razorpay&logoColor=white" />
-  </td>
-  <td>Gateway integrations</td>
-</tr>
-<tr>
-  <td>🚀 <b>Deployment</b></td>
-  <td>
-    <img src="https://img.shields.io/badge/Vercel-000000?style=flat-square&logo=vercel&logoColor=white" />
-    <img src="https://img.shields.io/badge/Render-46E3B7?style=flat-square&logo=render&logoColor=white" />
-  </td>
-  <td>Frontend + Backend hosting</td>
-</tr>
-</table>
-
-</div>
-
----
-
-## 🏗️ Project Architecture
-
-```
-📦 doctor-appointment-booking/
-│
-├── 🎨 frontend/              → Patient-facing React app (Vite + Tailwind)
-│   ├── src/
-│   │   ├── components/       → Reusable UI components
-│   │   ├── pages/            → Route-level pages
-│   │   ├── context/          → Global state (AppContext)
-│   │   └── assets/           → Images, icons, static files
-│   └── vite.config.js
-│
-├── 🛠 admin/                 → Admin dashboard (Vite + Tailwind)
-│   ├── src/
-│   │   ├── components/
-│   │   ├── pages/Admin/      → Dashboard, DoctorList, AddDoctor
-│   │   ├── pages/Doctor/     → Doctor-specific views
-│   │   └── context/          → AdminContext, DoctorContext
-│   └── vite.config.js
-│
-├── ⚙️ backend/               → Node.js + Express REST API
-│   ├── config/               → mongodb.js, cloudinary.js
-│   ├── controllers/          → Route business logic
-│   ├── middlewares/          → authAdmin, authUser, multer
-│   ├── models/               → Mongoose schemas
-│   ├── routes/               → API endpoints
-│   └── server.js
-│
-└── 📄 README.md              → You are here ✨
-```
-
----
-
-## 📸 Screenshots
-
-<div align="center">
-
-> 💡 *Add your project screenshots here for maximum visual impact*
-
-<table>
-<tr>
-<td align="center"><b>🏠 Homepage</b><br /><img src="https://via.placeholder.com/400x220/3b82f6/ffffff?text=Homepage" /></td>
-<td align="center"><b>👨‍⚕️ Doctors List</b><br /><img src="https://via.placeholder.com/400x220/14b8a6/ffffff?text=Doctors" /></td>
-</tr>
-<tr>
-<td align="center"><b>📅 Book Appointment</b><br /><img src="https://via.placeholder.com/400x220/f97316/ffffff?text=Booking" /></td>
-<td align="center"><b>🛠 Admin Dashboard</b><br /><img src="https://via.placeholder.com/400x220/a855f7/ffffff?text=Admin" /></td>
-</tr>
-</table>
-
-</div>
-
----
-
-## ⚙️ Environment Variables
-
-<details>
-<summary><b>🔵 Backend</b> — <code>backend/.env</code></summary>
-
-```env
-PORT=4000
-MONGODB_URI=your_mongodb_uri
-CLOUDINARY_NAME=your_cloudinary_name
-CLOUDINARY_API_KEY=your_cloudinary_key
-CLOUDINARY_SECRET_KEY=your_cloudinary_secret
-ADMIN_EMAIL=admin@example.com
-ADMIN_PASSWORD=your_admin_password
-JWT_SECRET=your_jwt_secret
-STRIPE_SECRET_KEY=your_stripe_key
-RAZORPAY_KEY_ID=your_razorpay_id
-RAZORPAY_KEY_SECRET=your_razorpay_secret
-FRONTEND_URL=https://full-stack-doctor-appointment-booki.vercel.app
-ADMIN_URL=https://full-stack-doctor-appointment-booki-eight.vercel.app
-```
-
-</details>
-
-<details>
-<summary><b>🟣 Frontend</b> — <code>frontend/.env</code></summary>
-
-```env
-VITE_BACKEND_URL=https://your-backend.onrender.com
-VITE_RAZORPAY_KEY_ID=your_razorpay_key_id
-```
-
-</details>
-
-<details>
-<summary><b>🔴 Admin</b> — <code>admin/.env</code></summary>
-
-```env
-VITE_BACKEND_URL=https://your-backend.onrender.com
-```
-
-</details>
->>>>>>> ce990fc (Update project)
-
----
-
-## 🚀 Getting Started
-
-<<<<<<< HEAD
 Follow these steps to set up and run the project components on your local machine.
->>>>>>> 7a183af (Update project)
 
-Make sure you have installed:
-
-![Node](https://img.shields.io/badge/Node.js-≥18.0-339933?style=flat-square&logo=nodedotjs&logoColor=white)
-![npm](https://img.shields.io/badge/npm-≥9.0-CB3837?style=flat-square&logo=npm&logoColor=white)
-![Git](https://img.shields.io/badge/Git-latest-F05032?style=flat-square&logo=git&logoColor=white)
-
-### 📥 Clone the Repository
-
-```bash
-<<<<<<< HEAD
-=======
-git clone [https://github.com/your-username/your-repo.git](https://github.com/your-username/your-repo.git)
-cd your-repo
-=======
 ### 📋 Prerequisites
 
 Make sure you have installed:
@@ -681,7 +336,6 @@ Make sure you have installed:
 ### 📥 Clone the Repository
 
 ```bash
->>>>>>> 7a183af (Update project)
 git clone https://github.com/your-username/full-stack-doctor-appointment-booking.git
 cd full-stack-doctor-appointment-booking
 ```
@@ -842,9 +496,9 @@ MIT © 2025 — Doctor Appointment Booking System
 
 <div align="center">
 
-### Built with ❤️ by **Your Name**
+### Built with ❤️ by **Suman Jha**
 
-<a href="https://github.com/your-username">
+<a href="https://github.com/sumanjhanp04">
   <img src="https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white" />
 </a>
 <a href="https://linkedin.com/in/your-profile">
@@ -852,9 +506,6 @@ MIT © 2025 — Doctor Appointment Booking System
 </a>
 <a href="mailto:your.email@example.com">
   <img src="https://img.shields.io/badge/Email-EA4335?style=for-the-badge&logo=gmail&logoColor=white" />
-</a>
-<a href="https://twitter.com/your-handle">
-  <img src="https://img.shields.io/badge/Twitter-1DA1F2?style=for-the-badge&logo=twitter&logoColor=white" />
 </a>
 
 </div>
@@ -874,7 +525,3 @@ MIT © 2025 — Doctor Appointment Booking System
 **[⬆ Back to Top](#-doctor-appointment-booking-system)**
 
 </div>
-<<<<<<< HEAD
-=======
->>>>>>> ce990fc (Update project)
->>>>>>> 7a183af (Update project)
