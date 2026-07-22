@@ -1,12 +1,6 @@
-<<<<<<< HEAD
-
 <div align="center">
 
-# 🏥 Full-Stack Doctor Appointment Booking System (MERN Stack)
-
-=======
-<div align="center">
->>>>>>> 3e847fc (Replace corrupted README with clean version)
+# 🏥 Doctor Appointment Booking System
 
 <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=700&size=32&duration=3000&pause=800&color=3B82F6&center=true&vCenter=true&width=800&lines=%F0%9F%8F%A5+Doctor+Appointment+Booking+System;Full-Stack+MERN+Healthcare+Platform;Book+%E2%80%A2+Manage+%E2%80%A2+Consult+%E2%80%A2+Heal" alt="Typing SVG" />
 
@@ -61,7 +55,7 @@
 <td align="center" width="33%">
 
 ### ⚡ Backend API
-<a href="https://your-render-backend-url.onrender.com" target="_blank">
+<a href="#" target="_blank">
   <img src="https://img.shields.io/badge/API%20Endpoint-a855f7?style=for-the-badge&logo=render&logoColor=white" />
 </a>
 <br /><br />
@@ -80,18 +74,18 @@
 <details>
 <summary>Click to expand</summary>
 
-- [🎯 Overview](#-overview)
-- [✨ Key Features](#-key-features)
-- [🎨 Tech Stack](#-tech-stack)
-- [🏗️ Project Architecture](#️-project-architecture)
-- [📸 Screenshots](#-screenshots)
-- [⚙️ Environment Variables](#️-environment-variables)
-- [🚀 Getting Started](#-getting-started)
-- [📡 API Endpoints](#-api-endpoints)
-- [🚢 Deployment](#-deployment)
-- [🤝 Contributing](#-contributing)
-- [📄 License](#-license)
-- [👨‍💻 Author](#-author)
+- [Overview](#-overview)
+- [Key Features](#-key-features)
+- [Tech Stack](#-tech-stack)
+- [Project Architecture](#️-project-architecture)
+- [Screenshots](#-screenshots)
+- [Environment Variables](#️-environment-variables)
+- [Getting Started](#-getting-started)
+- [API Endpoints](#-api-endpoints)
+- [Deployment](#-deployment)
+- [Contributing](#-contributing)
+- [License](#-license)
+- [Author](#-author)
 
 </details>
 
@@ -101,7 +95,7 @@
 
 **Doctor Appointment Booking System** is a complete healthcare management platform where **patients** can discover doctors, book appointments, and manage their medical journey — while **admins** get a powerful dashboard to onboard doctors, monitor bookings, and analyze platform activity.
 
-Built with the **MERN stack** (MongoDB, Express, React, Node.js), enhanced with **Cloudinary** for media, **Stripe & Razorpay** for payments, and deployed on **Vercel + Render**.
+Built with the **MERN stack** (MongoDB, Express, React, Node.js), enhanced with **Cloudinary** for media and **Stripe & Razorpay** for payments, deployed on **Vercel**.
 
 > 💡 **Perfect for:** Clinics, hospitals, telemedicine startups, and portfolio projects showcasing full-stack expertise.
 
@@ -146,8 +140,6 @@ Built with the **MERN stack** (MongoDB, Express, React, Node.js), enhanced with 
 ## 🎨 Tech Stack
 
 <div align="center">
-
-### 💠 Core Stack
 
 <img src="https://skillicons.dev/icons?i=react,nodejs,express,mongodb,tailwind,vite,vercel,git,github&perline=9" />
 
@@ -212,9 +204,8 @@ Built with the **MERN stack** (MongoDB, Express, React, Node.js), enhanced with 
   <td>🚀 <b>Deployment</b></td>
   <td>
     <img src="https://img.shields.io/badge/Vercel-000000?style=flat-square&logo=vercel&logoColor=white" />
-    <img src="https://img.shields.io/badge/Render-46E3B7?style=flat-square&logo=render&logoColor=white" />
   </td>
-  <td>Frontend + Backend hosting</td>
+  <td>Frontend + backend hosting</td>
 </tr>
 </table>
 
@@ -247,8 +238,8 @@ Built with the **MERN stack** (MongoDB, Express, React, Node.js), enhanced with 
 │   ├── config/               → mongodb.js, cloudinary.js
 │   ├── controllers/          → Route business logic
 │   ├── middlewares/          → authAdmin, authUser, multer
-│   ├── models/               → Mongoose schemas
-│   ├── routes/               → API endpoints
+│   ├── models/                → Mongoose schemas
+│   ├── routes/                → API endpoints
 │   └── server.js
 │
 └── 📄 README.md              → You are here ✨
@@ -260,18 +251,7 @@ Built with the **MERN stack** (MongoDB, Express, React, Node.js), enhanced with 
 
 <div align="center">
 
-> 💡 *Add your project screenshots here for maximum visual impact*
-
-<table>
-<tr>
-<td align="center"><b>🏠 Homepage</b><br /><img src="https://via.placeholder.com/400x220/3b82f6/ffffff?text=Homepage" /></td>
-<td align="center"><b>👨‍⚕️ Doctors List</b><br /><img src="https://via.placeholder.com/400x220/14b8a6/ffffff?text=Doctors" /></td>
-</tr>
-<tr>
-<td align="center"><b>📅 Book Appointment</b><br /><img src="https://via.placeholder.com/400x220/f97316/ffffff?text=Booking" /></td>
-<td align="center"><b>🛠 Admin Dashboard</b><br /><img src="https://via.placeholder.com/400x220/a855f7/ffffff?text=Admin" /></td>
-</tr>
-</table>
+> Add screenshots of the homepage, doctor listing, booking flow, and admin dashboard here to give visitors an instant feel for the app.
 
 </div>
 
@@ -304,7 +284,7 @@ ADMIN_URL=https://doctor-appointment-booking-tx26.vercel.app
 <summary><b>🟣 Frontend</b> — <code>frontend/.env</code></summary>
 
 ```env
-VITE_BACKEND_URL=https://your-backend.onrender.com
+VITE_BACKEND_URL=https://your-backend-url.onrender.com
 VITE_RAZORPAY_KEY_ID=your_razorpay_key_id
 ```
 
@@ -314,7 +294,7 @@ VITE_RAZORPAY_KEY_ID=your_razorpay_key_id
 <summary><b>🔴 Admin</b> — <code>admin/.env</code></summary>
 
 ```env
-VITE_BACKEND_URL=https://your-backend.onrender.com
+VITE_BACKEND_URL=https://your-backend-url.onrender.com
 ```
 
 </details>
@@ -323,11 +303,7 @@ VITE_BACKEND_URL=https://your-backend.onrender.com
 
 ## 🚀 Getting Started
 
-Follow these steps to set up and run the project components on your local machine.
-
 ### 📋 Prerequisites
-
-Make sure you have installed:
 
 ![Node](https://img.shields.io/badge/Node.js-≥18.0-339933?style=flat-square&logo=nodedotjs&logoColor=white)
 ![npm](https://img.shields.io/badge/npm-≥9.0-CB3837?style=flat-square&logo=npm&logoColor=white)
@@ -336,8 +312,8 @@ Make sure you have installed:
 ### 📥 Clone the Repository
 
 ```bash
-git clone https://github.com/your-username/full-stack-doctor-appointment-booking.git
-cd full-stack-doctor-appointment-booking
+git clone https://github.com/sumanjhanp04/doctor-appointment-booking.git
+cd doctor-appointment-booking
 ```
 
 ### 🧩 Install & Run — Step by Step
@@ -464,7 +440,7 @@ Runs on **`:5174`**
 
 ## 🤝 Contributing
 
-Contributions make the open-source community amazing! Any contributions are **greatly appreciated**. 💜
+Contributions are welcome! 💜
 
 ```bash
 # 1. Fork the project
@@ -486,10 +462,6 @@ git push origin feature/AmazingFeature
 
 Distributed under the **MIT License**. See [`LICENSE`](./LICENSE) for details.
 
-```
-MIT © 2025 — Doctor Appointment Booking System
-```
-
 ---
 
 ## 👨‍💻 Author
@@ -500,12 +472,6 @@ MIT © 2025 — Doctor Appointment Booking System
 
 <a href="https://github.com/sumanjhanp04">
   <img src="https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white" />
-</a>
-<a href="https://linkedin.com/in/your-profile">
-  <img src="https://img.shields.io/badge/LinkedIn-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white" />
-</a>
-<a href="mailto:your.email@example.com">
-  <img src="https://img.shields.io/badge/Email-EA4335?style=for-the-badge&logo=gmail&logoColor=white" />
 </a>
 
 </div>
